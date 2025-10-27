@@ -972,17 +972,19 @@ select {
 }
 
 .stat-box {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
     padding: 1.25rem;
     border-radius: 10px;
-    border: 1px solid var(--border-color);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
 }
 
 [data-theme="dark"] .stat-box {
-    background: rgba(15, 15, 15, 0.9);
+    background: rgba(30, 30, 30, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .stat-box::before {
@@ -1217,16 +1219,18 @@ select {
 
 .card-metric {
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
     border-radius: 10px;
-    border: 1px solid var(--border-color);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
 }
 
 [data-theme="dark"] .card-metric {
-    background: rgba(15, 15, 15, 0.9);
+    background: rgba(30, 30, 30, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .card-metric::after {
