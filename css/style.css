@@ -654,10 +654,16 @@ select {
 }
 
 .quick-add-item:hover {
-    background: var(--bg-secondary);
-    border-color: var(--text-primary);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: var(--shadow-md);
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+[data-theme="dark"] .quick-add-item:hover {
+    background: rgba(40, 40, 40, 0.95);
+    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
 }
 
 .quick-add-item:active {
@@ -1184,12 +1190,15 @@ select {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
+    margin: 0;
+    word-wrap: break-word;
 }
 
 .card-cost {
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-secondary);
+    margin: 0;
 }
 
 .card-details {
