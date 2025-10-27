@@ -58,68 +58,117 @@ fetchExchangeRates();
 let subscriptions = [];
 let logoCache = {};
 
-// Fetch company logo
-async function fetchCompanyLogo(companyName) {
-    if (logoCache[companyName]) {
-        return logoCache[companyName];
+// Comprehensive logo mapping using Wikipedia Commons (CORS-friendly, no API needed)
+const logoMapping = {
+    // Streaming Services
+    'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+    'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
+    'Hulu': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg',
+    'Amazon Prime': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video_logo.svg',
+    'HBO Max': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/HBO_Max_logo.svg',
+    'Paramount': 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Paramount%2B_logo.svg',
+    'Peacock': 'https://upload.wikimedia.org/wikipedia/commons/0/0e/NBCUniversal_Peacock_logo.svg',
+    'Apple TV': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Apple_TV_Plus.svg',
+    'Crunchyroll': 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Crunchyroll_Logo.svg',
+    'YouTube TV': 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon.svg',
+    
+    // Music Services
+    'Spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
+    'Apple Music': 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Apple_Music_Logo.svg',
+    'YouTube Music': 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon.svg',
+    'Tidal': 'https://upload.wikimedia.org/wikipedia/commons/8/80/Tidal_logo.svg',
+    'Pandora': 'https://upload.wikimedia.org/wikipedia/commons/8/89/Pandora_media_logo.svg',
+    'SoundCloud': 'https://upload.wikimedia.org/wikipedia/commons/1/17/SoundCloud_Logo.svg',
+    
+    // Cloud Storage
+    'Dropbox': 'https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg',
+    'Google Drive': 'https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon.svg',
+    'OneDrive': 'https://upload.wikimedia.org/wikipedia/commons/9/9a/OneDrive_logo.svg',
+    'Box': 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Box_logo.svg',
+    'iCloud': 'https://upload.wikimedia.org/wikipedia/commons/a/a1/iCloud_logo.svg',
+    
+    // Productivity
+    'Microsoft': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg',
+    'Adobe': 'https://upload.wikimedia.org/wikipedia/commons/7/7f/Adobe_Systems_logo_and_wordmark.svg',
+    'Notion': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png',
+    'Evernote': 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Evernote_logo.svg',
+    'Todoist': 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Todoist_Logo.svg',
+    'Grammarly': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Grammarly_logo.svg',
+    'Zoom': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Zoom.Communications_logo.svg',
+    'Canva': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Canva_logo.svg',
+    'Figma': 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg',
+    'Slack': 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Slack_Technologies_Logo.svg',
+    'Asana': 'https://upload.wikimedia.org/wikipedia/commons/8/83/Asana_logo.svg',
+    'Monday': 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Monday.com_logo.svg',
+    'Trello': 'https://upload.wikimedia.org/wikipedia/commons/7/73/Trello_logo.svg',
+    
+    // Gaming
+    'Xbox': 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_game_logo.svg',
+    'PlayStation': 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Playstation_logo.svg',
+    'Nintendo': 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Nintendo_logo.svg',
+    'Steam': 'https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg',
+    'Discord': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Discord_logo.svg',
+    'Twitch': 'https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg',
+    'Roblox': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Roblox_Logo.svg',
+    'Epic Games': 'https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg',
+    'Ubisoft': 'https://upload.wikimedia.org/wikipedia/commons/8/8d/Ubisoft_logo.svg',
+    'EA': 'https://upload.wikimedia.org/wikipedia/commons/c/cd/EA_logo.svg',
+    
+    // Fitness
+    'Peloton': 'https://upload.wikimedia.org/wikipedia/commons/a/aa/Peloton_logo.svg',
+    'MyFitnessPal': 'https://upload.wikimedia.org/wikipedia/commons/1/13/MyFitnessPal_Logo.svg',
+    'Strava': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Strava_Logo.svg',
+    'Calm': 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Calm_logo.svg',
+    'Headspace': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Headspace_logo.svg',
+    
+    // Learning
+    'MasterClass': 'https://upload.wikimedia.org/wikipedia/commons/9/9a/MasterClass_Logo.svg',
+    'Duolingo': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Duolingo_logo.svg',
+    'Coursera': 'https://upload.wikimedia.org/wikipedia/commons/9/97/Coursera-Logo_600x600.svg',
+    'Skillshare': 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Skillshare_logo.svg',
+    'LinkedIn': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png',
+    'Udemy': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Udemy_logo.svg',
+    
+    // Food & Delivery
+    'Uber Eats': 'https://upload.wikimedia.org/wikipedia/commons/c/c2/Uber_Eats_2018_logo.svg',
+    'DoorDash': 'https://upload.wikimedia.org/wikipedia/commons/b/be/DoorDash_Logo.svg',
+    'Grubhub': 'https://upload.wikimedia.org/wikipedia/commons/e/e2/Grubhub_logo.svg',
+    'Instacart': 'https://upload.wikimedia.org/wikipedia/commons/9/99/Instacart_logo.svg',
+    'HelloFresh': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/HelloFresh_logo.svg',
+    
+    // Security
+    'NordVPN': 'https://upload.wikimedia.org/wikipedia/commons/9/95/NordVPN_logo_icon.svg',
+    'ExpressVPN': 'https://upload.wikimedia.org/wikipedia/commons/5/5a/ExpressVPN_logo.svg',
+    '1Password': 'https://upload.wikimedia.org/wikipedia/commons/9/9d/1Password_company_logo.svg',
+    'LastPass': 'https://upload.wikimedia.org/wikipedia/commons/e/e5/LastPass_logo.svg',
+    
+    // News
+    'New York Times': 'https://upload.wikimedia.org/wikipedia/commons/7/77/The_New_York_Times_logo.png',
+    'Wall Street Journal': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/The_Wall_Street_Journal_logo.svg',
+    'Washington Post': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Washington_Post_Logo.svg'
+};
+
+function getCompanyLogo(companyName) {
+    // Try exact match first
+    if (logoMapping[companyName]) {
+        return logoMapping[companyName];
     }
     
-    try {
-        // Use DuckDuckGo Image API (free, no API key needed)
-        const searchQuery = encodeURIComponent(`${companyName} logo official`);
-        const url = `https://duckduckgo.com/?q=${searchQuery}&iax=images&ia=images&iar=images`;
-        
-        // For now, we'll use a placeholder approach since direct logo fetching from external APIs has CORS issues
-        // Use a simple fallback approach with known service logo mappings
-        const serviceLogoMap = {
-            'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
-            'Spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
-            'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
-            'Amazon Prime': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video_logo.svg',
-            'HBO Max': 'https://logos-world.net/wp-content/uploads/2020/11/HBO-Max-Logo.png',
-            'Apple': 'https://www.apple.com/favicon-32x32.png',
-            'Microsoft': 'https://www.microsoft.com/favicon.ico',
-            'Adobe': 'https://www.adobe.com/favicon.ico',
-            'Disney': 'https://www.disney.com/favicon.ico',
-            'Pixar': 'https://www.pixar.com/favicon.ico',
-            'Marvel': 'https://www.marvel.com/favicon.ico',
-            'Star Wars': 'https://www.starwars.com/favicon.ico',
-            'National Geographic': 'https://www.nationalgeographic.com/favicon.ico'
-        };
-        
-        // Check if we have a direct logo mapping
-        const mappedLogo = serviceLogoMap[companyName];
-        if (mappedLogo) {
-            logoCache[companyName] = mappedLogo;
-            return mappedLogo;
+    // Try partial matches
+    for (const [serviceName, logoUrl] of Object.entries(logoMapping)) {
+        if (companyName.toLowerCase().includes(serviceName.toLowerCase()) || 
+            serviceName.toLowerCase().includes(companyName.toLowerCase())) {
+            return logoUrl;
         }
-        
-        // Try to find a logo based on common patterns
-        const cleanName = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const commonLogos = [
-            `https://logo.clearbit.com/${cleanName}.com`,
-            `https://${cleanName}.com/favicon.ico`,
-            `https://www.${cleanName}.com/favicon.ico`
-        ];
-        
-        // Test if logo exists
-        for (const logoUrl of commonLogos) {
-            try {
-                const response = await fetch(logoUrl, { mode: 'no-cors' });
-                if (response.ok || response.status === 0) {
-                    logoCache[companyName] = logoUrl;
-                    return logoUrl;
-                }
-            } catch (e) {
-                continue;
-            }
-        }
-        
-        return null;
-    } catch (error) {
-        console.log('Logo fetch failed for:', companyName);
-        return null;
     }
+    
+    // Try getting company name from subscription (handle tier suffixes)
+    const baseName = companyName.split(' - ')[0].split(' Basic')[0].split(' Standard')[0].split(' Premium')[0];
+    if (logoMapping[baseName]) {
+        return logoMapping[baseName];
+    }
+    
+    return null;
 }
 
 // Popular Services with Real Prices (USD) - grouped by company with tiers
@@ -206,16 +255,36 @@ const popularServices = {
     'KKBox': { cost: 6.99, category: 'Music' },
     
     // Cloud Storage (20 services)
-    'Apple iCloud 50GB': { cost: 0.99, category: 'Cloud Storage' },
-    'Apple iCloud 200GB': { cost: 2.99, category: 'Cloud Storage' },
-    'Apple iCloud 2TB': { cost: 9.99, category: 'Cloud Storage' },
-    'Dropbox Plus': { cost: 9.99, category: 'Cloud Storage' },
-    'Dropbox Professional': { cost: 19.99, category: 'Cloud Storage' },
-    'Google Drive 100GB': { cost: 1.99, category: 'Cloud Storage' },
-    'Google Drive 200GB': { cost: 2.99, category: 'Cloud Storage' },
-    'Google Drive 2TB': { cost: 9.99, category: 'Cloud Storage' },
-    'OneDrive 100GB': { cost: 1.99, category: 'Cloud Storage' },
-    'OneDrive 1TB': { cost: 6.99, category: 'Cloud Storage' },
+    'iCloud': {
+        options: [
+            { tier: '50GB', cost: 0.99 },
+            { tier: '200GB', cost: 2.99 },
+            { tier: '2TB', cost: 9.99 }
+        ],
+        category: 'Cloud Storage'
+    },
+    'Dropbox': {
+        options: [
+            { tier: 'Plus', cost: 9.99 },
+            { tier: 'Professional', cost: 19.99 }
+        ],
+        category: 'Cloud Storage'
+    },
+    'Google Drive': {
+        options: [
+            { tier: '100GB', cost: 1.99 },
+            { tier: '200GB', cost: 2.99 },
+            { tier: '2TB', cost: 9.99 }
+        ],
+        category: 'Cloud Storage'
+    },
+    'OneDrive': {
+        options: [
+            { tier: '100GB', cost: 1.99 },
+            { tier: '1TB', cost: 6.99 }
+        ],
+        category: 'Cloud Storage'
+    },
     'Box Personal': { cost: 14, category: 'Cloud Storage' },
     'pCloud': { cost: 4.99, category: 'Cloud Storage' },
     'Tresorit': { cost: 10.42, category: 'Cloud Storage' },
@@ -1032,6 +1101,35 @@ function renderSummary() {
     const yearlyCost = totalMonthlyCost * 12;
     const dailyCost = totalMonthlyCost / 30;
 
+    // Calculate costs in different currencies
+    const currencyCosts = {};
+    Object.keys(exchangeRates).forEach(currency => {
+        if (currency !== currentCurrency) {
+            currencyCosts[currency] = {
+                monthly: totalMonthlyCost * exchangeRates[currency].rate,
+                yearly: yearlyCost * exchangeRates[currency].rate,
+                daily: dailyCost * exchangeRates[currency].rate
+            };
+        }
+    });
+
+    let otherCurrenciesHTML = '';
+    if (Object.keys(currencyCosts).length > 0) {
+        otherCurrenciesHTML = `
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-primary);">Other Currencies</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
+                    ${Object.entries(currencyCosts).slice(0, 3).map(([currency, costs]) => `
+                        <div style="padding: 0.75rem; background: rgba(255, 255, 255, 0.5); border-radius: 6px; border: 1px solid var(--border-color);">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">${currency}</div>
+                            <div style="font-weight: 600; color: var(--text-primary);">${exchangeRates[currency].symbol}${costs.monthly.toFixed(2)}/mo</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
     summaryView.innerHTML = `
         <h2>Overview</h2>
         <div class="summary-stats">
@@ -1052,6 +1150,7 @@ function renderSummary() {
                 <span>Subscriptions</span>
             </div>
         </div>
+        ${otherCurrenciesHTML}
     `;
 }
 
@@ -1218,10 +1317,18 @@ function renderSubscriptionList() {
         const displayMonthlyCost = convertPrice(monthlyCost);
         const displayCostPerUse = convertPrice(costPerUse);
         
+        // Get company logo
+        const baseName = subscription.name.split(' - ')[0];
+        const logoUrl = getCompanyLogo(baseName);
+        const logoHTML = logoUrl ? `<img src="${logoUrl}" alt="${baseName}" class="company-logo" onerror="this.style.display='none'">` : '';
+        
         card.innerHTML = `
             <div class="card-header">
-                <h3 class="card-title">${escapeHtml(subscription.name)}</h3>
-                <span class="card-cost">${formatCurrency(displayMonthlyCost)}/mo</span>
+                ${logoHTML}
+                <div class="card-title-wrapper">
+                    <h3 class="card-title">${escapeHtml(subscription.name)}</h3>
+                    <span class="card-cost">${formatCurrency(displayMonthlyCost)}/mo</span>
+                </div>
             </div>
             <div class="card-details">
                 <div class="card-metric">
