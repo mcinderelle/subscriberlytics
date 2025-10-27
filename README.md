@@ -2,6 +2,12 @@
 
 A modern subscription tracking and analytics tool designed by **Mayukhjit Chakraborty**. Track and analyze your subscriptions with real-time currency conversion and comprehensive insights.
 
+## 🌐 Live Demo
+
+**[View Live on Vercel →](https://subscriblytics-n8dtoru3h-rajchakrabortymusic-3025s-projects.vercel.app)**
+
+Experience the full app with all features including real-time currency conversion, PWA support, and offline functionality.
+
 ## What's New
 
 ### Latest Design Enhancements
@@ -116,7 +122,7 @@ A modern subscription tracking and analytics tool designed by **Mayukhjit Chakra
 
 ## Usage
 
-1. Open `index.html` in your web browser
+1. **Visit Live Site**: Go to [https://subscriblytics-n8dtoru3h-rajchakrabortymusic-3025s-projects.vercel.app](https://subscriblytics-n8dtoru3h-rajchakrabortymusic-3025s-projects.vercel.app) or open `index.html` in your web browser
 2. **Toggle Theme**: Click the moon/sun icon in the header to switch between light and dark modes
 3. **Select Currency**: Choose your preferred currency from the dropdown
 4. **Search & Add**: Search for services (press `/` to focus) or scroll through the list and click to add
