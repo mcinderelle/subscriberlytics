@@ -888,11 +888,15 @@ const popularServices = {
 };
 
 function convertPrice(usdPrice) {
-    return usdPrice * exchangeRates[currentCurrency].rate;
+    if (!usdPrice || isNaN(usdPrice)) return 0;
+    const rate = exchangeRates[currentCurrency]?.rate || 1;
+    return usdPrice * rate;
 }
 
 function formatCurrency(amount) {
-    return `${exchangeRates[currentCurrency].symbol}${amount.toFixed(2)}`;
+    if (!amount || isNaN(amount)) return `${exchangeRates[currentCurrency].symbol}0.00`;
+    const symbol = exchangeRates[currentCurrency]?.symbol || '$';
+    return `${symbol}${amount.toFixed(2)}`;
 }
 
 function adjustBrightness(hex, percent) {
