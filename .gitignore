@@ -20,3 +20,18 @@ node_modules/
 .env
 .env.local
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Development tools
+create-icons.py
+generate-icons.html
+start-server.bat
+DEV-GUIDE.md
+ICON-FIX-SUMMARY.md
+IMPROVEMENTS.md
+FEATURES_SUMMARY.md
