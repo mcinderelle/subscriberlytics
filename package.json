@@ -4,8 +4,8 @@
   "description": "Track and analyze your subscription value",
   "type": "module",
   "scripts": {
-    "build": "echo 'No build step needed - static site'",
-    "start": "python -m http.server 8000"
+    "build": "echo 'Static site - no build needed'",
+    "start": "echo 'Site ready'"
   },
   "keywords": [
     "subscription",
