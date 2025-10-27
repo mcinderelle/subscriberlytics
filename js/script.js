@@ -1071,9 +1071,9 @@ function renderQuickAdd() {
         item.innerHTML = `
             ${logoHTML}
             <div style="flex: 1;">
-                <div class="quick-add-name">${name}</div>
+            <div class="quick-add-name">${name}</div>
                 <div class="quick-add-price">${priceText}</div>
-                <span class="quick-add-category">${data.category}</span>
+            <span class="quick-add-category">${data.category}</span>
             </div>
         `;
         
@@ -1520,7 +1520,7 @@ function renderChart() {
                 context.strokeRect(x, y, barWidth, barHeight);
                 
                 // Show cost on top of bar with background for visibility
-                const displayCost = convertPrice(item.cost);
+                    const displayCost = convertPrice(item.cost);
                 const costText = formatCurrency(displayCost);
                 const textMetrics = context.measureText(costText);
                 const bgWidth = textMetrics.width + 6;
@@ -1532,8 +1532,8 @@ function renderChart() {
                 
                 // Text on bar
                 context.fillStyle = textColor;
-                context.font = 'bold 10px Inter';
-                context.textAlign = 'center';
+                    context.font = 'bold 10px Inter';
+                    context.textAlign = 'center';
                 context.fillText(costText, x + barWidth / 2, y - 8);
                 
                 // Company name label below bar (no rotation, centered)
@@ -1625,8 +1625,8 @@ function renderSubscriptionList() {
             <div class="card-header">
                 ${logoHTML}
                 <div class="card-title-wrapper">
-                    <h3 class="card-title">${escapeHtml(subscription.name)}</h3>
-                    <span class="card-cost">${formatCurrency(displayMonthlyCost)}/mo</span>
+                <h3 class="card-title">${escapeHtml(subscription.name)}</h3>
+                <span class="card-cost">${formatCurrency(displayMonthlyCost)}/mo</span>
                 </div>
             </div>
             <div class="card-details">
@@ -1649,7 +1649,7 @@ function renderSubscriptionList() {
                     <button class="btn-edit" title="Edit subscription">
                         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>
                     </button>
-                    <button class="btn-delete"><span>Delete</span></button>
+                <button class="btn-delete"><span>Delete</span></button>
                 </div>
             </div>
         `;
