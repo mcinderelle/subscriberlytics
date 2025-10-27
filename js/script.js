@@ -1329,11 +1329,11 @@ function renderQuickAdd() {
         const displayPrice = convertPrice(cost);
         
         // Get company logo
-        const baseName = name.split(' ')[0]; // Get first word for logo matching
+        const baseName = name.split(' - ')[0].split(' Basic')[0].split(' Standard')[0].split(' Premium')[0].split(' Pro')[0].split(' Plus')[0].split(' Max')[0].split('+')[0];
         const logoUrl = getCompanyLogo(name);
         // Only show logo if we have a valid URL
         const logoHTML = logoUrl && !logoUrl.startsWith('PLACEHOLDER:') 
-            ? `<img src="${logoUrl}" alt="${name}" class="company-logo-small" onerror="this.style.display='none'">` 
+            ? `<img src="${logoUrl}" alt="${name}" class="company-logo-small" loading="lazy" onerror="this.style.display='none'; this.onerror=null;">` 
             : '';
         
         // Show price range if multiple tiers
@@ -2067,12 +2067,16 @@ function renderSubscriptionList() {
         const displayMonthlyCost = convertPrice(subMonthlyCost, subscriptionCurrency);
         const displayCostPerUse = convertPrice(costPerUse, subscriptionCurrency);
         
-        // Get company logo
-        const baseName = subscription.name.split(' - ')[0];
-        const logoUrl = getCompanyLogo(baseName);
+        // Get company logo - extract base name by removing tier suffixes
+        const baseName = subscription.name
+            .split(' - ')[0]
+            .split(' Basic')[0].split(' Standard')[0].split(' Premium')[0]
+            .split(' Individual')[0].split(' Family')[0].split(' Business')[0]
+            .split(' Pro')[0].split(' Plus')[0].split(' Max')[0].split('+')[0];
+        const logoUrl = getCompanyLogo(baseName) || getCompanyLogo(subscription.name);
         // Only show logo if we have a valid URL
         const logoHTML = logoUrl && !logoUrl.startsWith('PLACEHOLDER:') 
-            ? `<img src="${logoUrl}" alt="${baseName}" class="company-logo" onerror="this.style.display='none'">` 
+            ? `<img src="${logoUrl}" alt="${baseName}" class="company-logo" loading="lazy" onerror="this.style.display='none'; this.onerror=null;">` 
             : '';
         
         const isSelected = selectedSubscriptionIds.has(subscription.id);
