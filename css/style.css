@@ -1437,7 +1437,7 @@ select {
 
 .chart-wrapper {
     position: relative;
-    height: 250px;
+    height: 280px; /* Increased to prevent axis cutoff */
     padding: 0.5rem 0;
 }
 

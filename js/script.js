@@ -1331,10 +1331,10 @@ function renderQuickAdd() {
         // Get company logo
         const baseName = name.split(' - ')[0].split(' Basic')[0].split(' Standard')[0].split(' Premium')[0].split(' Pro')[0].split(' Plus')[0].split(' Max')[0].split('+')[0];
         const logoUrl = getCompanyLogo(name);
-        // Only show logo if we have a valid URL
+        // Always show a logo container (placeholder if no logo) to maintain uniform card heights
         const logoHTML = logoUrl && !logoUrl.startsWith('PLACEHOLDER:') 
             ? `<img src="${logoUrl}" alt="${name}" class="company-logo-small" loading="lazy" onerror="this.style.display='none'; this.onerror=null;">` 
-            : '';
+            : '<div class="company-logo-small" style="background: rgba(0,0,0,0.05);"></div>';
         
         // Show price range if multiple tiers
         let priceText = `${formatCurrency(displayPrice)}/mo`;
@@ -1880,7 +1880,8 @@ function renderChart() {
             
             const wrapper = canvas.parentElement;
             canvas.width = wrapper.clientWidth - 2;
-            canvas.height = 250;
+
+            canvas.height = 280; // Increased height to prevent axis cutoff
             
             const context = canvas.getContext('2d');
             
@@ -1892,9 +1893,9 @@ function renderChart() {
             if (monthlyCosts.length === 0) return;
             
             const maxCost = Math.max(...monthlyCosts.map(item => item.cost));
-            const padding = 80;
+            const padding = 90; // Increased padding to prevent axis cutoff
             const chartWidth = canvas.width - padding * 2;
-            const chartHeight = canvas.height - padding * 2;
+            const chartHeight = canvas.height - padding - 20; // Extra space for labels
             const itemCount = monthlyCosts.length;
             const barSpacing = Math.min(12, chartWidth / itemCount / 2);
             const barWidth = Math.max(20, (chartWidth / itemCount) - barSpacing * 2);
@@ -1982,7 +1983,7 @@ function renderChart() {
             context.fillStyle = labelColor;
             context.font = 'bold 11px "OpenAI Sans", sans-serif';
             context.textAlign = 'center';
-            context.fillText('Service', canvas.width / 2, canvas.height - 5);
+            context.fillText('Service', canvas.width / 2, canvas.height - 15);
             
         } catch (error) {
             console.error('Error rendering chart:', error);
@@ -2074,10 +2075,10 @@ function renderSubscriptionList() {
             .split(' Individual')[0].split(' Family')[0].split(' Business')[0]
             .split(' Pro')[0].split(' Plus')[0].split(' Max')[0].split('+')[0];
         const logoUrl = getCompanyLogo(baseName) || getCompanyLogo(subscription.name);
-        // Only show logo if we have a valid URL
+        // Always show a logo container (placeholder if no logo) to maintain uniform card heights
         const logoHTML = logoUrl && !logoUrl.startsWith('PLACEHOLDER:') 
             ? `<img src="${logoUrl}" alt="${baseName}" class="company-logo" loading="lazy" onerror="this.style.display='none'; this.onerror=null;">` 
-            : '';
+            : '<div class="company-logo" style="background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 10px;">No logo</div>';
         
         const isSelected = selectedSubscriptionIds.has(subscription.id);
         card.innerHTML = `
