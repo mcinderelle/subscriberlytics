@@ -464,6 +464,14 @@ select {
     color: var(--text-primary);
 }
 
+.quick-add-item > img {
+    margin-right: 0.5rem;
+}
+
+.quick-add-item > div {
+    flex: 1;
+}
+
 .quick-add-item::before {
     content: '';
     position: absolute;
@@ -971,6 +979,36 @@ select {
 
 [data-theme="dark"] .company-logo {
     background: rgba(15, 15, 15, 0.5);
+}
+
+.company-logo-small {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 0.25rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .company-logo-small {
+    background: rgba(15, 15, 15, 0.5);
+}
+
+.quick-add-item {
+    padding: 0.875rem 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-direction: row;
+    animation: fadeInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    position: relative;
+    overflow: hidden;
 }
 
 .card-title {

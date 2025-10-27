@@ -984,6 +984,11 @@ function renderQuickAdd() {
         let cost = data.cost || (data.options && data.options[0].cost);
         const displayPrice = convertPrice(cost);
         
+        // Get company logo
+        const baseName = name.split(' ')[0]; // Get first word for logo matching
+        const logoUrl = getCompanyLogo(name);
+        const logoHTML = logoUrl ? `<img src="${logoUrl}" alt="${name}" class="company-logo-small" onerror="this.style.display='none'">` : '';
+        
         // Show price range if multiple tiers
         let priceText = `${formatCurrency(displayPrice)}/mo`;
         if (data.options && data.options.length > 1) {
@@ -993,9 +998,12 @@ function renderQuickAdd() {
         }
         
         item.innerHTML = `
-            <div class="quick-add-name">${name}</div>
-            <div class="quick-add-price">${priceText}</div>
-            <span class="quick-add-category">${data.category}</span>
+            ${logoHTML}
+            <div style="flex: 1;">
+                <div class="quick-add-name">${name}</div>
+                <div class="quick-add-price">${priceText}</div>
+                <span class="quick-add-category">${data.category}</span>
+            </div>
         `;
         
         item.addEventListener('click', () => showUsageModal(name, data));
