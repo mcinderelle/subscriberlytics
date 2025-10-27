@@ -4,6 +4,14 @@ A modern subscription tracking and analytics tool designed by **Mayukhjit Chakra
 
 ## What's New
 
+### Latest Design Enhancements
+- **Monospace Branding**: Professional JetBrains Mono typography throughout the interface
+- **Enhanced 3D Grid Background**: Animated multi-layer grid effect with subtle glow
+- **Company Logos**: Visual logos for 200+ services automatically displayed
+- **Edit Feature**: In-place editing of subscription details
+- **Real-time Updates**: Automatic graph refresh every 5 seconds
+- **30+ Currencies**: Auto-detect currency based on IP location
+
 ### Dark Mode
 - Toggle between light and dark themes
 - Automatic theme persistence
