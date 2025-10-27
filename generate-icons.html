@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            margin: 10px 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate Subscriblytics Icons</h1>
+        <div class="instructions">
+            <p>Click the buttons below to generate PNG icons. The icons will be downloaded to your Downloads folder.</p>
+            <p>After generating, move the icon PNG files to the subscriberlytics folder to replace the placeholders.</p>
+        </div>
+        
+        <div id="icons"></div>
+        
+        <script>
+            function createIcon(size) {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw rounded rectangle background
+                    const radius = size * 0.2;
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.beginPath();
+                    ctx.moveTo(radius, 0);
+                    ctx.lineTo(size - radius, 0);
+                    ctx.quadraticCurveTo(size, 0, size, radius);
+                    ctx.lineTo(size, size - radius);
+                    ctx.quadraticCurveTo(size, size, size - radius, size);
+                    ctx.lineTo(radius, size);
+                    ctx.quadraticCurveTo(0, size, 0, size - radius);
+                    ctx.lineTo(0, radius);
+                    ctx.quadraticCurveTo(0, 0, radius, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Draw "S" text
+                    ctx.fillStyle = 'white';
+                    ctx.font = `bold ${size * 0.6}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('S', size / 2, size / 2);
+                    
+                    resolve(canvas);
+                });
+            }
+            
+            async function generateIcon(size) {
+                const canvas = await createIcon(size);
+                const link = document.createElement('a');
+                link.download = `icon-${size}x${size}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+            
+            // Create buttons for common sizes
+            const sizes = [32, 192, 512];
+            const container = document.getElementById('icons');
+            
+            sizes.forEach(size => {
+                const button = document.createElement('button');
+                button.textContent = `Generate ${size}x${size} Icon`;
+                button.onclick = () => generateIcon(size);
+                container.appendChild(button);
+            });
+        </script>
+    </div>
+</body>
+</html>
+
