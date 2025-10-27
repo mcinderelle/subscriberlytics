@@ -1,5 +1,5 @@
 // === Currency Exchange Rates ===
-const exchangeRates = {
+let exchangeRates = {
     USD: { symbol: '$', rate: 1 },
     EUR: { symbol: '€', rate: 0.92 },
     GBP: { symbol: '£', rate: 0.79 },
@@ -10,16 +10,71 @@ const exchangeRates = {
 
 let currentCurrency = 'USD';
 
+// Fetch live exchange rates every 5 seconds (using free keyless API)
+let rateUpdateTimer = null;
+async function fetchExchangeRates() {
+    try {
+        const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+        const data = await response.json();
+        
+        if (data.success && data.rates) {
+            const oldRates = { ...exchangeRates };
+            exchangeRates = {
+                USD: { symbol: '$', rate: 1 },
+                EUR: { symbol: '€', rate: data.rates.EUR || 0.92 },
+                GBP: { symbol: '£', rate: data.rates.GBP || 0.79 },
+                CAD: { symbol: 'C$', rate: data.rates.CAD || 1.35 },
+                AUD: { symbol: 'A$', rate: data.rates.AUD || 1.52 },
+                JPY: { symbol: '¥', rate: data.rates.JPY || 150 }
+            };
+            
+            // Only re-render if rates actually changed
+            let ratesChanged = false;
+            for (let key in exchangeRates) {
+                if (oldRates[key] && Math.abs(exchangeRates[key].rate - oldRates[key].rate) > 0.001) {
+                    ratesChanged = true;
+                    break;
+                }
+            }
+            
+            if (ratesChanged && subscriptions.length > 0) {
+                render();
+                renderQuickAdd();
+            }
+        }
+    } catch (error) {
+        console.log('Exchange rate fetch failed, using cached rates:', error);
+        // Continue with existing rates
+    }
+}
+
+// Start fetching rates every 5 seconds
+rateUpdateTimer = setInterval(fetchExchangeRates, 5000);
+
+// Initial fetch
+fetchExchangeRates();
+
 // === Data Management ===
 let subscriptions = [];
 
-// Popular Services with Real Prices (USD) - REMOVED FREE ONES
+// Popular Services with Real Prices (USD) - grouped by company with tiers
 const popularServices = {
-    // Streaming (30 services)
-    'Netflix Basic': { cost: 9.99, category: 'Streaming' },
-    'Netflix Standard': { cost: 15.49, category: 'Streaming' },
-    'Netflix Premium': { cost: 22.99, category: 'Streaming' },
-    'Disney+': { cost: 13.99, category: 'Streaming' },
+    // Streaming
+    'Netflix': { 
+        options: [
+            { tier: 'Basic', cost: 9.99 },
+            { tier: 'Standard', cost: 15.49 },
+            { tier: 'Premium', cost: 22.99 }
+        ],
+        category: 'Streaming'
+    },
+    'Disney+': { 
+        options: [
+            { tier: 'Monthly', cost: 13.99 },
+            { tier: 'Annual', cost: 139.99 }
+        ],
+        category: 'Streaming'
+    },
     'Hulu': { cost: 7.99, category: 'Streaming' },
     'Hulu No Ads': { cost: 17.99, category: 'Streaming' },
     'Amazon Prime': { cost: 14.99, category: 'Streaming' },
@@ -48,10 +103,21 @@ const popularServices = {
     'fuboTV': { cost: 74.99, category: 'Streaming' },
     
     // Music (25 services)
-    'Spotify': { cost: 10.99, category: 'Music' },
-    'Spotify Family': { cost: 16.99, category: 'Music' },
-    'Spotify Student': { cost: 5.99, category: 'Music' },
-    'Apple Music': { cost: 10.99, category: 'Music' },
+    'Spotify': {
+        options: [
+            { tier: 'Individual', cost: 10.99 },
+            { tier: 'Family', cost: 16.99 },
+            { tier: 'Student', cost: 5.99 }
+        ],
+        category: 'Music'
+    },
+    'Apple Music': {
+        options: [
+            { tier: 'Individual', cost: 10.99 },
+            { tier: 'Family', cost: 16.99 }
+        ],
+        category: 'Music'
+    },
     'Apple Music Family': { cost: 16.99, category: 'Music' },
     'YouTube Music': { cost: 10.99, category: 'Music' },
     'YouTube Music Family': { cost: 16.99, category: 'Music' },
@@ -97,10 +163,22 @@ const popularServices = {
     'Filen': { cost: 11.99, category: 'Cloud Storage' },
     
     // Productivity (30 services)
-    'Microsoft 365 Personal': { cost: 6.99, category: 'Productivity' },
-    'Microsoft 365 Family': { cost: 9.99, category: 'Productivity' },
-    'Microsoft 365 Business': { cost: 12.50, category: 'Productivity' },
-    'Adobe Creative Cloud': { cost: 52.99, category: 'Productivity' },
+    'Microsoft 365': {
+        options: [
+            { tier: 'Personal', cost: 6.99 },
+            { tier: 'Family', cost: 9.99 },
+            { tier: 'Business', cost: 12.50 }
+        ],
+        category: 'Productivity'
+    },
+    'Adobe Creative Cloud': {
+        options: [
+            { tier: 'Single App', cost: 22.99 },
+            { tier: 'All Apps', cost: 52.99 },
+            { tier: 'Students', cost: 19.99 }
+        ],
+        category: 'Productivity'
+    },
     'Adobe Photoshop': { cost: 22.99, category: 'Productivity' },
     'Adobe Illustrator': { cost: 22.99, category: 'Productivity' },
     'Adobe Premiere Pro': { cost: 22.99, category: 'Productivity' },
@@ -129,13 +207,29 @@ const popularServices = {
     'Smartsheet': { cost: 14, category: 'Productivity' },
     
     // Gaming (25 services)
-    'Xbox Game Pass': { cost: 10.99, category: 'Gaming' },
-    'Xbox Game Pass Ultimate': { cost: 16.99, category: 'Gaming' },
-    'PlayStation Plus Essential': { cost: 9.99, category: 'Gaming' },
-    'PlayStation Plus Extra': { cost: 14.99, category: 'Gaming' },
-    'PlayStation Plus Premium': { cost: 17.99, category: 'Gaming' },
-    'Nintendo Switch Online': { cost: 3.99, category: 'Gaming' },
-    'Nintendo Switch Online + Expansion': { cost: 49.99, category: 'Gaming' },
+    'Xbox Game Pass': {
+        options: [
+            { tier: 'Standard', cost: 10.99 },
+            { tier: 'Ultimate', cost: 16.99 }
+        ],
+        category: 'Gaming'
+    },
+    'PlayStation Plus': {
+        options: [
+            { tier: 'Essential', cost: 9.99 },
+            { tier: 'Extra', cost: 14.99 },
+            { tier: 'Premium', cost: 17.99 }
+        ],
+        category: 'Gaming'
+    },
+    'Nintendo Switch Online': {
+        options: [
+            { tier: 'Individual', cost: 3.99 },
+            { tier: 'Family', cost: 7.99 },
+            { tier: 'Expansion Pack', cost: 49.99 }
+        ],
+        category: 'Gaming'
+    },
     'EA Play': { cost: 4.99, category: 'Gaming' },
     'GeForce Now Priority': { cost: 9.99, category: 'Gaming' },
     'GeForce Now Ultimate': { cost: 19.99, category: 'Gaming' },
@@ -376,6 +470,17 @@ function formatCurrency(amount) {
     return `${exchangeRates[currentCurrency].symbol}${amount.toFixed(2)}`;
 }
 
+function adjustBrightness(hex, percent) {
+    const num = parseInt(hex.replace("#",""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
+
 // Load subscriptions from localStorage
 function loadSubscriptions() {
     try {
@@ -475,8 +580,12 @@ function handleCurrencyChange(e) {
     currentCurrency = e.target.value;
     // Save to localStorage
     localStorage.setItem('subscriblytics-currency', currentCurrency);
+    // Force re-render everything to update currency
     render();
     renderQuickAdd();
+    
+    // Re-render chart if it exists
+    renderChart();
 }
 
 function handleCategoryFilter(e) {
@@ -517,11 +626,21 @@ function renderQuickAdd() {
         const item = document.createElement('div');
         item.className = 'quick-add-item';
         
-        const displayPrice = convertPrice(data.cost);
+        // Get cost - either direct or from options
+        let cost = data.cost || (data.options && data.options[0].cost);
+        const displayPrice = convertPrice(cost);
+        
+        // Show price range if multiple tiers
+        let priceText = `${formatCurrency(displayPrice)}/mo`;
+        if (data.options && data.options.length > 1) {
+            const minCost = Math.min(...data.options.map(o => o.cost));
+            const maxCost = Math.max(...data.options.map(o => o.cost));
+            priceText = `${formatCurrency(convertPrice(minCost))} - ${formatCurrency(convertPrice(maxCost))}/mo`;
+        }
         
         item.innerHTML = `
             <div class="quick-add-name">${name}</div>
-            <div class="quick-add-price">${formatCurrency(displayPrice)}/mo</div>
+            <div class="quick-add-price">${priceText}</div>
             <span class="quick-add-category">${data.category}</span>
         `;
         
@@ -531,18 +650,41 @@ function renderQuickAdd() {
 }
 
 function showUsageModal(name, data) {
-    if (subscriptions.find(sub => sub.name === name)) {
+    // Check if already exists (considering tiers)
+    const checkName = data.options ? name : name.split(' - ')[0];
+    if (subscriptions.find(sub => sub.name.split(' - ')[0] === checkName)) {
         showNotification(`${name} is already in your subscriptions!`, 'warning');
         return;
     }
     
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
+    
+    let cost = data.cost || (data.options && data.options[0].cost);
+    let optionsHTML = '';
+    
+    if (data.options && data.options.length > 0) {
+        optionsHTML = `
+            <div class="form-group">
+                <label for="modal-tier">Select Tier/Plan</label>
+                <select id="modal-tier" required>
+                    ${data.options.map((option, idx) => `
+                        <option value="${idx}" ${idx === 0 ? 'selected' : ''}>
+                            ${option.tier} - ${formatCurrency(convertPrice(option.cost))}/mo
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+        `;
+        cost = data.options[0].cost;
+    }
+    
     modal.innerHTML = `
         <div class="modal-content">
             <h3>Add ${name}</h3>
-            <p class="modal-price">${formatCurrency(convertPrice(data.cost))}/month</p>
+            <p class="modal-price">${formatCurrency(convertPrice(cost))}/month</p>
             <form id="usage-form">
+                ${optionsHTML}
                 <div class="form-group">
                     <label for="modal-usage">How many times do you use this per month?</label>
                     <input type="number" id="modal-usage" min="0" step="0.1" value="1" required>
@@ -557,6 +699,18 @@ function showUsageModal(name, data) {
     
     document.body.appendChild(modal);
     
+    // Update price when tier changes
+    if (data.options) {
+        const tierSelect = modal.querySelector('#modal-tier');
+        const priceDisplay = modal.querySelector('.modal-price');
+        tierSelect.addEventListener('change', () => {
+            const selectedIdx = parseInt(tierSelect.value);
+            const selectedOption = data.options[selectedIdx];
+            cost = selectedOption.cost;
+            priceDisplay.textContent = `${formatCurrency(convertPrice(cost))}/month`;
+        });
+    }
+    
     modal.querySelector('.btn-cancel').addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.remove();
@@ -565,11 +719,21 @@ function showUsageModal(name, data) {
     modal.querySelector('#usage-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const usage = parseFloat(modal.querySelector('#modal-usage').value);
+        let finalName = name;
+        let finalCost = cost;
+        
+        if (data.options) {
+            const tierSelect = modal.querySelector('#modal-tier');
+            const selectedIdx = parseInt(tierSelect.value);
+            const selectedOption = data.options[selectedIdx];
+            finalName = `${name} - ${selectedOption.tier}`;
+            finalCost = selectedOption.cost;
+        }
         
         const subscription = {
             id: Date.now().toString(),
-            name: name,
-            cost: data.cost,
+            name: finalName,
+            cost: finalCost,
             billingCycle: 'monthly',
             usage: usage,
             usageFrequency: 'per-month'
@@ -579,7 +743,7 @@ function showUsageModal(name, data) {
         saveSubscriptions();
         render();
         modal.remove();
-        showNotification(`${name} added successfully!`, 'success');
+        showNotification(`${finalName} added successfully!`, 'success');
     });
 }
 
@@ -778,30 +942,59 @@ function renderChart() {
             
             context.clearRect(0, 0, canvas.width, canvas.height);
             
+            // Get theme-aware colors
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#1a1a1a' : '#fff';
+            const labelColor = isDark ? '#a0a0a0' : '#666';
+            
+            // Color palette for different subscriptions
+            const colors = [
+                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+                '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
+                '#14b8a6', '#e11d48', '#7c3aed', '#16a34a', '#dc2626',
+                '#0ea5e9', '#a855f7', '#d946ef', '#f43f5e', '#0d9488'
+            ];
+            
             monthlyCosts.forEach((item, index) => {
                 const barHeight = Math.max(5, (item.cost / maxCost) * chartHeight);
                 const x = padding + index * (barWidth + barSpacing);
                 const y = canvas.height - padding - barHeight;
                 
-                context.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                // Use different color for each bar
+                const colorIndex = index % colors.length;
+                const barColor = colors[colorIndex];
+                
+                // Create gradient for depth
+                const gradient = context.createLinearGradient(x, y, x, y + barHeight);
+                gradient.addColorStop(0, barColor);
+                gradient.addColorStop(1, isDark ? adjustBrightness(barColor, -20) : adjustBrightness(barColor, 20));
+                
+                context.fillStyle = gradient;
                 context.fillRect(x, y, barWidth, barHeight);
+                
+                // Add border for better definition
+                context.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                context.lineWidth = 1;
+                context.strokeRect(x, y, barWidth, barHeight);
                 
                 if (barHeight > 30) {
                     const displayCost = convertPrice(item.cost);
-                    context.fillStyle = '#fff';
+                    context.fillStyle = textColor;
                     context.font = 'bold 10px Inter';
                     context.textAlign = 'center';
                     context.fillText(formatCurrency(displayCost), x + barWidth / 2, y + barHeight / 2 + 3);
                 }
                 
-                context.fillStyle = '#666';
+                context.fillStyle = labelColor;
                 context.font = '9px Inter';
                 context.textAlign = 'center';
                 const label = item.name.substring(0, Math.min(12, 40 / barWidth));
                 context.fillText(label, x + barWidth / 2, canvas.height - padding / 2 + 3);
             });
             
-            context.strokeStyle = '#e5e5e5';
+            // Get theme-aware stroke color
+            const strokeColor = isDark ? '#3a3a3a' : '#e5e5e5';
+            context.strokeStyle = strokeColor;
             context.lineWidth = 1;
             context.beginPath();
             context.moveTo(padding, padding / 2);
@@ -908,10 +1101,10 @@ function getValueCategory(costPerUse) {
 
 function getValueDescription(category) {
     const descriptions = {
-        'excellent': '✓ Excellent',
-        'good': '✓ Good',
-        'moderate': '⚠ Moderate',
-        'poor': '✗ Poor Value'
+        'excellent': '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg> Excellent',
+        'good': '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg> Good',
+        'moderate': '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/></svg> Moderate',
+        'poor': '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M11.354 4.646a.5.5 0 0 0-.708 0l-6 6a.5.5 0 0 0 .708.708l6-6a.5.5 0 0 0 0-.708z"/></svg> Poor Value'
     };
     return descriptions[category] || '';
 }
@@ -938,3 +1131,237 @@ function escapeHtml(text) {
 
 initializeQuickAdd();
 loadSubscriptions();
+
+// === Dark Mode Functionality ===
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = themeToggle?.querySelector('.theme-icon');
+let currentTheme = localStorage.getItem('subscriblytics-theme') || 'light';
+
+function initTheme() {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon();
+}
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('subscriblytics-theme', currentTheme);
+    updateThemeIcon();
+    // Re-render chart if needed for theme change
+    if (subscriptions.length > 0) {
+        renderChart();
+    }
+}
+
+function updateThemeIcon() {
+    const sunIcon = document.querySelector('.sun-icon');
+    const moonIcon = document.querySelector('.moon-icon');
+    
+    if (currentTheme === 'dark') {
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (moonIcon) moonIcon.style.display = 'block';
+    } else {
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (moonIcon) moonIcon.style.display = 'none';
+    }
+}
+
+themeToggle?.addEventListener('click', toggleTheme);
+initTheme();
+
+// === Export/Import Functionality ===
+const exportBtn = document.getElementById('export-btn');
+const importBtn = document.getElementById('import-btn');
+
+exportBtn?.addEventListener('click', () => {
+    try {
+        const dataToExport = {
+            subscriptions: subscriptions,
+            currency: currentCurrency,
+            theme: currentTheme,
+            exportDate: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `subscriblytics-export-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification('Data exported successfully!', 'success');
+    } catch (error) {
+        console.error('Export error:', error);
+        showNotification('Failed to export data', 'error');
+    }
+});
+
+importBtn?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            
+            if (!confirm('This will replace your current data. Are you sure?')) {
+                e.target.value = '';
+                return;
+            }
+            
+            if (data.subscriptions) {
+                subscriptions = data.subscriptions;
+                saveSubscriptions();
+                render();
+            }
+            
+            if (data.currency && exchangeRates[data.currency]) {
+                currentCurrency = data.currency;
+                currencySelector.value = currentCurrency;
+                localStorage.setItem('subscriblytics-currency', currentCurrency);
+            }
+            
+            if (data.theme && ['light', 'dark'].includes(data.theme)) {
+                currentTheme = data.theme;
+                initTheme();
+            }
+            
+            showNotification('Data imported successfully!', 'success');
+            e.target.value = '';
+        } catch (error) {
+            console.error('Import error:', error);
+            showNotification('Failed to import data. Invalid file format.', 'error');
+            e.target.value = '';
+        }
+    };
+    reader.readAsText(file);
+});
+
+// === Keyboard Shortcuts ===
+const shortcutsModal = document.getElementById('shortcuts-modal');
+const shortcutsModalClose = shortcutsModal?.querySelector('.btn-close');
+
+function openShortcutsModal() {
+    if (shortcutsModal) {
+        shortcutsModal.classList.remove('hidden');
+        shortcutsModal.addEventListener('click', handleShortcutsModalClick);
+        shortcutsModal.querySelector('.shortcuts-content')?.addEventListener('click', (e) => e.stopPropagation());
+    }
+}
+
+function closeShortcutsModal() {
+    if (shortcutsModal) {
+        shortcutsModal.classList.add('hidden');
+        shortcutsModal.removeEventListener('click', handleShortcutsModalClick);
+    }
+}
+
+function handleShortcutsModalClick(e) {
+    if (e.target === shortcutsModal) {
+        closeShortcutsModal();
+    }
+}
+
+shortcutsModalClose?.addEventListener('click', closeShortcutsModal);
+
+document.addEventListener('keydown', (e) => {
+    // Ignore if typing in an input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        return;
+    }
+    
+    // Ctrl/Cmd + E - Export
+    if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        exportBtn?.click();
+    }
+    
+    // Ctrl/Cmd + I - Import
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+        e.preventDefault();
+        importBtn?.click();
+    }
+    
+    // Ctrl/Cmd + K or / - Focus search
+    if (((e.ctrlKey || e.metaKey) && e.key === 'k') || e.key === '/') {
+        e.preventDefault();
+        serviceSearch?.focus();
+    }
+    
+    // ? - Show shortcuts
+    if (e.key === '?' && !e.shiftKey) {
+        e.preventDefault();
+        openShortcutsModal();
+    }
+    
+    // Esc - Close modal
+    if (e.key === 'Escape') {
+        closeShortcutsModal();
+    }
+});
+
+// Focus search on / key (even when typing)
+document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        serviceSearch?.focus();
+    }
+});
+
+// === Improved Analytics Features ===
+function getCategoryBreakdown() {
+    const breakdown = {};
+    subscriptions.forEach(sub => {
+        const monthlyCost = sub.billingCycle === 'annually' ? sub.cost / 12 : sub.cost;
+        const category = popularServices[sub.name]?.category || 'Other';
+        breakdown[category] = (breakdown[category] || 0) + monthlyCost;
+    });
+    return breakdown;
+}
+
+function getTrendingUpSubscriptions() {
+    return subscriptions.filter(sub => {
+        const costPerUse = calculateCostPerUse(sub);
+        return costPerUse > 1.0;
+    }).slice(0, 3);
+}
+
+function getBestValueSubscriptions() {
+    return subscriptions.map(sub => ({
+        name: sub.name,
+        costPerUse: calculateCostPerUse(sub)
+    })).sort((a, b) => a.costPerUse - b.costPerUse).slice(0, 3);
+}
+
+// === Update Summary with Better Analytics ===
+const originalRenderSummary = renderSummary;
+renderSummary = function() {
+    originalRenderSummary();
+    
+    if (subscriptions.length === 0) return;
+    
+    const categoryBreakdown = getCategoryBreakdown();
+    const categories = Object.keys(categoryBreakdown);
+    
+    if (categories.length > 0) {
+        const breakdownHTML = `
+            <div class="category-breakdown" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-primary);">Cost by Category</h3>
+                <div class="category-list" style="display: grid; gap: 0.5rem;">
+                    ${categories.map(cat => {
+                        const cost = categoryBreakdown[cat];
+                        return `
+                            <div class="category-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255, 255, 255, 0.5); border-radius: 6px; border: 1px solid var(--border-color);">
+                                <span style="font-size: 0.875rem; color: var(--text-secondary);">${cat}</span>
+                                <strong style="font-size: 0.875rem; color: var(--text-primary);">${formatCurrency(convertPrice(cost))}</strong>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+        summaryView.insertAdjacentHTML('beforeend', breakdownHTML);
+    }
+};

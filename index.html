@@ -2,7 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Track and analyze your subscription value with real-time currency conversion. Get insights on cost per use, compare services, and optimize your spending.">
+    <meta name="keywords" content="subscription tracker, subscription manager, subscription analytics, expense tracker, cost per use">
+    <meta name="author" content="Mayukhjit Chakraborty">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Subscriblytics - Track Your Subscription Value">
+    <meta property="og:description" content="Track and analyze your subscription value with real-time currency conversion">
+    <meta property="og:site_name" content="Subscriblytics">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Subscriblytics - Track Your Subscription Value">
+    <meta name="twitter:description" content="Track and analyze your subscription value with real-time currency conversion">
+    
+    <!-- PWA Support -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Subscriblytics">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192x192.png">
+    
     <title>Subscriblytics - Track Your Subscription Value</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,8 +37,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <div class="logo-container">
+    <header role="banner">
+        <div class="logo-container" aria-hidden="true">
             <div class="logo-line"></div>
             <div class="logo-text">S</div>
         </div>
@@ -20,59 +47,80 @@
             <p class="tagline">Track and analyze your subscription value</p>
             <p class="credits">Designed by <strong>Mayukhjit Chakraborty</strong></p>
         </div>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+            <svg class="theme-icon sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 16 8zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+            </svg>
+            <svg class="theme-icon moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.316 7.316 0 0 0 5.205-2.162c-.337.042-.68.063-1.029.063-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286z"/>
+            </svg>
+        </button>
     </header>
 
-    <main class="container">
-        <!-- Currency Selector -->
-        <section class="currency-section">
-            <select id="currency-selector">
-                <option value="USD">USD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
-                <option value="CAD">CAD (C$)</option>
-                <option value="AUD">AUD (A$)</option>
-                <option value="JPY">JPY (¥)</option>
-            </select>
-        </section>
+    <main class="container" role="main">
+        <div class="main-content">
+            <!-- Currency Selector -->
+            <section class="currency-section" aria-label="Currency selection">
+                <label for="currency-selector" class="sr-only">Select Currency</label>
+                <select id="currency-selector" aria-label="Select currency" title="Change display currency">
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="CAD">CAD (C$)</option>
+                    <option value="AUD">AUD (A$)</option>
+                    <option value="JPY">JPY (¥)</option>
+                </select>
+            </section>
 
-        <!-- Quick Add Section -->
-        <section class="quick-add-section">
+            <!-- Quick Add Section -->
+            <section class="quick-add-section" aria-label="Popular services">
             <div class="section-header">
                 <h2>Popular Services</h2>
-                <input type="text" id="service-search" placeholder="Search services..." class="search-input">
+                <label for="service-search" class="sr-only">Search services</label>
+                <input type="search" id="service-search" placeholder="Search services..." class="search-input" aria-label="Search services">
             </div>
             <div class="filter-controls">
-                <select id="category-filter" class="filter-select">
+                <label for="category-filter" class="sr-only">Filter by category</label>
+                <select id="category-filter" class="filter-select" aria-label="Filter by category">
                     <option value="">All Categories</option>
                 </select>
-                <select id="sort-filter" class="filter-select">
+                <label for="sort-filter" class="sr-only">Sort services</label>
+                <select id="sort-filter" class="filter-select" aria-label="Sort services">
                     <option value="name">Sort by Name</option>
                     <option value="price-low">Price: Low to High</option>
                     <option value="price-high">Price: High to Low</option>
                     <option value="category">Sort by Category</option>
                 </select>
             </div>
-            <div class="quick-add-grid" id="quick-add-grid"></div>
+            <div class="quick-add-grid" id="quick-add-grid" role="grid" aria-label="Popular services grid"></div>
         </section>
 
+        <!-- Section 2: Subscription List & Visualization -->
+        <section class="results-section" aria-label="Subscription analysis">
+            <div id="summary-view" class="summary-container" role="region" aria-label="Summary statistics"></div>
+            <div id="chart-container" class="chart-container" role="region" aria-label="Cost distribution chart"></div>
+            <div id="subscription-list" class="subscription-list" role="list" aria-label="Your subscriptions"></div>
+        </section>
+        </div>
+        
         <!-- Section 1: Input Form -->
-        <section class="form-section">
+        <section class="form-section" aria-label="Add custom subscription">
             <h2>Add Custom Subscription</h2>
-            <form id="subscription-form">
+            <form id="subscription-form" novalidate>
                 <div class="form-group">
                     <label for="name">Subscription Name</label>
-                    <input type="text" id="name" name="name" placeholder="e.g., Custom Service" required>
+                    <input type="text" id="name" name="name" placeholder="e.g., Custom Service" required aria-required="true">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="cost">Cost</label>
-                        <input type="number" id="cost" name="cost" placeholder="0.00" step="0.01" min="0" required>
+                        <input type="number" id="cost" name="cost" placeholder="0.00" step="0.01" min="0" required aria-required="true">
                     </div>
 
                     <div class="form-group">
                         <label for="billing-cycle">Billing Cycle</label>
-                        <select id="billing-cycle" name="billing-cycle" required>
+                        <select id="billing-cycle" name="billing-cycle" required aria-required="true">
                             <option value="monthly">Monthly</option>
                             <option value="annually">Annually</option>
                         </select>
@@ -82,12 +130,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="usage">Usage Amount</label>
-                        <input type="number" id="usage" name="usage" placeholder="1" min="0" step="0.1" required>
+                        <input type="number" id="usage" name="usage" placeholder="1" min="0" step="0.1" required aria-required="true">
                     </div>
 
                     <div class="form-group">
                         <label for="usage-frequency">Usage Frequency</label>
-                        <select id="usage-frequency" name="usage-frequency" required>
+                        <select id="usage-frequency" name="usage-frequency" required aria-required="true">
                             <option value="per-day">Times per Day</option>
                             <option value="per-week">Times per Week</option>
                             <option value="per-month">Times per Month</option>
@@ -97,16 +145,53 @@
 
                 <button type="submit" class="btn-primary">Add Subscription</button>
             </form>
-        </section>
-
-        <!-- Section 2: Subscription List & Visualization -->
-        <section class="results-section">
-            <div id="summary-view" class="summary-container"></div>
-            <div id="chart-container" class="chart-container"></div>
-            <div id="subscription-list" class="subscription-list"></div>
+            <div class="form-actions">
+                <button type="button" id="export-btn" class="btn-secondary" title="Export your data (Ctrl+E)">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg> Export
+                </button>
+                <label for="import-btn" class="btn-secondary" title="Import your data (Ctrl+I)">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg> Import
+                </label>
+                <input type="file" id="import-btn" accept=".json" style="display: none;">
+            </div>
         </section>
     </main>
+    
+    <!-- Keyboard Shortcuts Info -->
+    <div id="shortcuts-modal" class="shortcuts-modal hidden" role="dialog" aria-label="Keyboard shortcuts">
+        <div class="shortcuts-content">
+            <h3>Keyboard Shortcuts</h3>
+            <ul class="shortcuts-list">
+                <li><kbd>Ctrl</kbd> + <kbd>E</kbd> - Export data</li>
+                <li><kbd>Ctrl</kbd> + <kbd>I</kbd> - Import data</li>
+                <li><kbd>Ctrl</kbd> + <kbd>K</kbd> - Focus search</li>
+                <li><kbd>/</kbd> - Focus search</li>
+                <li><kbd>?</kbd> - Show shortcuts</li>
+                <li><kbd>Esc</kbd> - Close modal</li>
+            </ul>
+            <button class="btn-close" aria-label="Close shortcuts">Close</button>
+        </div>
+    </div>
 
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
     <script src="js/script.js"></script>
+    <noscript>
+        <div style="padding: 2rem; text-align: center;">
+            <p>JavaScript is required for this application to work properly.</p>
+        </div>
+    </noscript>
 </body>
 </html>
