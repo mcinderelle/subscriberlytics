@@ -107,7 +107,13 @@ async function detectUserCurrency() {
             render();
         }
     } catch (error) {
-        console.log('Could not detect location, using USD as default');
+        // Silently fail for CORS errors (expected when using file:// protocol)
+        // Using USD as default is fine
+        if (location.protocol === 'file:') {
+            // No console log needed for file:// protocol
+        } else {
+            console.log('Could not detect location, using USD as default');
+        }
     }
 }
 
