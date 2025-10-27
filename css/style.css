@@ -242,11 +242,21 @@ header {
     justify-content: center;
 }
 
-.logo-text {
+.logo-container .logo-text {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    width: 100%;
+    height: 100%;
     /* No animation - clean static display */
+}
+
+[data-theme="dark"] .logo-container .logo-text {
+    color: #fff;
 }
 
 .logo-line {
@@ -280,7 +290,7 @@ header {
 }
 
 header h1 {
-    font-family: var(--font-primary);
+    font-family: 'OpenAI Sans', sans-serif;
     font-size: 2rem;
     font-weight: 600;
     margin-bottom: 0.25rem;
@@ -289,10 +299,16 @@ header h1 {
 }
 
 header h1.logo-text {
+    font-family: 'OpenAI Sans', sans-serif;
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.2;
+    color: #000;
+}
+
+[data-theme="dark"] header h1.logo-text {
+    color: #fff;
 }
 
 @keyframes fadeIn {
@@ -358,18 +374,26 @@ header .tagline {
 
 .theme-icon {
     display: block;
+    color: #000;
+    transition: color 0.2s ease;
 }
 
 .theme-icon.moon-icon {
     display: none;
 }
 
+[data-theme="dark"] .theme-icon {
+    color: #fff;
+}
+
 [data-theme="dark"] .theme-icon.sun-icon {
     display: none;
+    color: #fff;
 }
 
 [data-theme="dark"] .theme-icon.moon-icon {
     display: block;
+    color: #fff;
 }
 
 @media (max-width: 768px) {
