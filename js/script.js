@@ -116,95 +116,295 @@ detectUserCurrency();
 // === Data Management ===
 let subscriptions = [];
 let logoCache = {};
+let history = []; // For undo/redo
+let historyIndex = -1;
+const MAX_HISTORY = 50;
+let selectedSubscriptionIds = new Set(); // For bulk selection
 
-// Comprehensive logo mapping using Wikipedia Commons (CORS-friendly, no API needed)
+// Debounce utility for performance optimization
+const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};
+
+// History management for undo/redo
+function addToHistory() {
+    const currentState = JSON.parse(JSON.stringify(subscriptions));
+    history = history.slice(0, historyIndex + 1);
+    history.push(currentState);
+    history = history.slice(-MAX_HISTORY);
+    historyIndex = history.length - 1;
+}
+
+function undo() {
+    if (historyIndex > 0) {
+        historyIndex--;
+        subscriptions = JSON.parse(JSON.stringify(history[historyIndex]));
+        saveSubscriptions();
+        render();
+        showNotification('Undone', 'info');
+    }
+}
+
+function redo() {
+    if (historyIndex < history.length - 1) {
+        historyIndex++;
+        subscriptions = JSON.parse(JSON.stringify(history[historyIndex]));
+        saveSubscriptions();
+        render();
+        showNotification('Redone', 'info');
+    }
+}
+
+// Comprehensive logo mapping using Clearbit Logo API (most reliable)
 const logoMapping = {
-    // Streaming Services
-    'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
-    'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
-    'Hulu': 'https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg',
-    'Amazon Prime': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video_logo.svg',
-    'HBO Max': 'https://upload.wikimedia.org/wikipedia/commons/1/1b/HBO_Max_logo.svg',
-    'Paramount': 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Paramount%2B_logo.svg',
-    'Peacock': 'https://upload.wikimedia.org/wikipedia/commons/0/0e/NBCUniversal_Peacock_logo.svg',
-    'Apple TV': 'https://upload.wikimedia.org/wikipedia/commons/d/d4/Apple_TV_Plus.svg',
-    'Crunchyroll': 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Crunchyroll_Logo.svg',
-    'YouTube TV': 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon.svg',
+    // Streaming Services - Using Clearbit API
+    'Netflix': 'https://logo.clearbit.com/netflix.com',
+    'Disney+': 'https://logo.clearbit.com/disney.com',
+    'Hulu': 'https://logo.clearbit.com/hulu.com',
+    'Amazon Prime': 'https://logo.clearbit.com/amazon.com',
+    'HBO Max': 'https://logo.clearbit.com/hbomax.com',
+    'Max': 'https://logo.clearbit.com/hbomax.com',
+    'Paramount': 'https://logo.clearbit.com/paramountplus.com',
+    'Peacock': 'https://logo.clearbit.com/peacocktv.com',
+    'Apple TV+': 'https://logo.clearbit.com/apple.com',
+    'Crunchyroll': 'https://logo.clearbit.com/crunchyroll.com',
+    'YouTube TV': 'https://logo.clearbit.com/youtube.com',
+    'YouTube Premium': 'https://logo.clearbit.com/youtube.com',
+    'Sling TV': 'https://logo.clearbit.com/sling.com',
+    'Sling TV Orange': 'https://logo.clearbit.com/sling.com',
+    'Sling TV Blue': 'https://logo.clearbit.com/sling.com',
+    'Philo': 'https://logo.clearbit.com/philo.com',
+    'fuboTV': 'https://logo.clearbit.com/fubo.tv',
     
     // Music Services
-    'Spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
-    'Apple Music': 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Apple_Music_Logo.svg',
-    'YouTube Music': 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon.svg',
-    'Tidal': 'https://upload.wikimedia.org/wikipedia/commons/8/80/Tidal_logo.svg',
-    'Pandora': 'https://upload.wikimedia.org/wikipedia/commons/8/89/Pandora_media_logo.svg',
-    'SoundCloud': 'https://upload.wikimedia.org/wikipedia/commons/1/17/SoundCloud_Logo.svg',
+    'Spotify': 'https://logo.clearbit.com/spotify.com',
+    'Apple Music': 'https://logo.clearbit.com/apple.com',
+    'YouTube Music': 'https://logo.clearbit.com/youtube.com',
+    'Tidal': 'https://logo.clearbit.com/tidal.com',
+    'Pandora': 'https://logo.clearbit.com/pandora.com',
+    'SoundCloud': 'https://logo.clearbit.com/soundcloud.com',
     
     // Cloud Storage
-    'Dropbox': 'https://upload.wikimedia.org/wikipedia/commons/7/78/Dropbox_Icon.svg',
-    'Google Drive': 'https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon.svg',
-    'OneDrive': 'https://upload.wikimedia.org/wikipedia/commons/9/9a/OneDrive_logo.svg',
-    'Box': 'https://upload.wikimedia.org/wikipedia/commons/4/4c/Box_logo.svg',
-    'iCloud': 'https://upload.wikimedia.org/wikipedia/commons/a/a1/iCloud_logo.svg',
+    'Dropbox': 'https://logo.clearbit.com/dropbox.com',
+    'Google Drive': 'https://logo.clearbit.com/google.com',
+    'OneDrive': 'https://logo.clearbit.com/onedrive.live.com',
+    'Box': 'https://logo.clearbit.com/box.com',
+    'iCloud': 'https://logo.clearbit.com/icloud.com',
     
     // Productivity
-    'Microsoft': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg',
-    'Adobe': 'https://upload.wikimedia.org/wikipedia/commons/7/7f/Adobe_Systems_logo_and_wordmark.svg',
-    'Notion': 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png',
-    'Evernote': 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Evernote_logo.svg',
-    'Todoist': 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Todoist_Logo.svg',
-    'Grammarly': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/Grammarly_logo.svg',
-    'Zoom': 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Zoom.Communications_logo.svg',
-    'Canva': 'https://upload.wikimedia.org/wikipedia/commons/4/44/Canva_logo.svg',
-    'Figma': 'https://upload.wikimedia.org/wikipedia/commons/3/33/Figma-logo.svg',
-    'Slack': 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Slack_Technologies_Logo.svg',
-    'Asana': 'https://upload.wikimedia.org/wikipedia/commons/8/83/Asana_logo.svg',
-    'Monday': 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Monday.com_logo.svg',
-    'Trello': 'https://upload.wikimedia.org/wikipedia/commons/7/73/Trello_logo.svg',
+    'Microsoft': 'https://logo.clearbit.com/microsoft.com',
+    'Adobe': 'https://logo.clearbit.com/adobe.com',
+    'Notion': 'https://logo.clearbit.com/notion.so',
+    'Evernote': 'https://logo.clearbit.com/evernote.com',
+    'Todoist': 'https://logo.clearbit.com/todoist.com',
+    'Grammarly': 'https://logo.clearbit.com/grammarly.com',
+    'Zoom': 'https://logo.clearbit.com/zoom.us',
+    'Canva': 'https://logo.clearbit.com/canva.com',
+    'Figma': 'https://logo.clearbit.com/figma.com',
+    'Slack': 'https://logo.clearbit.com/slack.com',
+    'Asana': 'https://logo.clearbit.com/asana.com',
+    'Monday': 'https://logo.clearbit.com/monday.com',
+    'Trello': 'https://logo.clearbit.com/trello.com',
     
     // Gaming
-    'Xbox': 'https://upload.wikimedia.org/wikipedia/commons/f/f9/Xbox_game_logo.svg',
-    'PlayStation': 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Playstation_logo.svg',
-    'Nintendo': 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Nintendo_logo.svg',
-    'Steam': 'https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg',
-    'Discord': 'https://upload.wikimedia.org/wikipedia/commons/9/98/Discord_logo.svg',
-    'Twitch': 'https://upload.wikimedia.org/wikipedia/commons/2/26/Twitch_logo.svg',
-    'Roblox': 'https://upload.wikimedia.org/wikipedia/commons/f/ff/Roblox_Logo.svg',
-    'Epic Games': 'https://upload.wikimedia.org/wikipedia/commons/3/31/Epic_Games_logo.svg',
-    'Ubisoft': 'https://upload.wikimedia.org/wikipedia/commons/8/8d/Ubisoft_logo.svg',
-    'EA': 'https://upload.wikimedia.org/wikipedia/commons/c/cd/EA_logo.svg',
+    'Xbox': 'https://logo.clearbit.com/xbox.com',
+    'PlayStation': 'https://logo.clearbit.com/playstation.com',
+    'Nintendo': 'https://logo.clearbit.com/nintendo.com',
+    'Steam': 'https://logo.clearbit.com/steampowered.com',
+    'Discord': 'https://logo.clearbit.com/discord.com',
+    'Twitch': 'https://logo.clearbit.com/twitch.tv',
+    'Roblox': 'https://logo.clearbit.com/roblox.com',
+    'Epic Games': 'https://logo.clearbit.com/epicgames.com',
+    'Ubisoft': 'https://logo.clearbit.com/ubisoft.com',
+    'EA': 'https://logo.clearbit.com/ea.com',
     
     // Fitness
-    'Peloton': 'https://upload.wikimedia.org/wikipedia/commons/a/aa/Peloton_logo.svg',
-    'MyFitnessPal': 'https://upload.wikimedia.org/wikipedia/commons/1/13/MyFitnessPal_Logo.svg',
-    'Strava': 'https://upload.wikimedia.org/wikipedia/commons/b/b5/Strava_Logo.svg',
-    'Calm': 'https://upload.wikimedia.org/wikipedia/commons/a/a5/Calm_logo.svg',
-    'Headspace': 'https://upload.wikimedia.org/wikipedia/commons/6/64/Headspace_logo.svg',
+    'Peloton': 'https://logo.clearbit.com/onepeloton.com',
+    'MyFitnessPal': 'https://logo.clearbit.com/myfitnesspal.com',
+    'Strava': 'https://logo.clearbit.com/strava.com',
+    'Calm': 'https://logo.clearbit.com/calm.com',
+    'Headspace': 'https://logo.clearbit.com/headspace.com',
     
     // Learning
-    'MasterClass': 'https://upload.wikimedia.org/wikipedia/commons/9/9a/MasterClass_Logo.svg',
-    'Duolingo': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Duolingo_logo.svg',
-    'Coursera': 'https://upload.wikimedia.org/wikipedia/commons/9/97/Coursera-Logo_600x600.svg',
-    'Skillshare': 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Skillshare_logo.svg',
-    'LinkedIn': 'https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png',
-    'Udemy': 'https://upload.wikimedia.org/wikipedia/commons/9/95/Udemy_logo.svg',
+    'MasterClass': 'https://logo.clearbit.com/masterclass.com',
+    'Duolingo': 'https://logo.clearbit.com/duolingo.com',
+    'Coursera': 'https://logo.clearbit.com/coursera.org',
+    'Skillshare': 'https://logo.clearbit.com/skillshare.com',
+    'LinkedIn Learning': 'https://logo.clearbit.com/linkedin.com',
+    'Udemy': 'https://logo.clearbit.com/udemy.com',
+    'Codecademy': 'https://logo.clearbit.com/codecademy.com',
+    'Pluralsight': 'https://logo.clearbit.com/pluralsight.com',
+    'DataCamp': 'https://logo.clearbit.com/datacamp.com',
+    'Brilliant': 'https://logo.clearbit.com/brilliant.org',
+    'Babbel': 'https://logo.clearbit.com/babbel.com',
+    'Rosetta Stone': 'https://logo.clearbit.com/rosettastone.com',
+    'Treehouse': 'https://logo.clearbit.com/teamtreehouse.com',
+    'Khan Academy': 'https://logo.clearbit.com/khanacademy.org',
+    'Chegg Study': 'https://logo.clearbit.com/chegg.com',
     
     // Food & Delivery
-    'Uber Eats': 'https://upload.wikimedia.org/wikipedia/commons/c/c2/Uber_Eats_2018_logo.svg',
-    'DoorDash': 'https://upload.wikimedia.org/wikipedia/commons/b/be/DoorDash_Logo.svg',
-    'Grubhub': 'https://upload.wikimedia.org/wikipedia/commons/e/e2/Grubhub_logo.svg',
-    'Instacart': 'https://upload.wikimedia.org/wikipedia/commons/9/99/Instacart_logo.svg',
-    'HelloFresh': 'https://upload.wikimedia.org/wikipedia/commons/1/1e/HelloFresh_logo.svg',
+    'Uber Eats': 'https://logo.clearbit.com/ubereats.com',
+    'DoorDash': 'https://logo.clearbit.com/doordash.com',
+    'Grubhub': 'https://logo.clearbit.com/grubhub.com',
+    'Instacart': 'https://logo.clearbit.com/instacart.com',
+    'HelloFresh': 'https://logo.clearbit.com/hellofresh.com',
+    'Blue Apron': 'https://logo.clearbit.com/blueapron.com',
+    'Sunbasket': 'https://logo.clearbit.com/sunbasket.com',
+    'Home Chef': 'https://logo.clearbit.com/homechef.com',
+    'EveryPlate': 'https://logo.clearbit.com/everyplate.com',
+    'Marley Spoon': 'https://logo.clearbit.com/marleyspoon.com',
+    'Freshly': 'https://logo.clearbit.com/freshly.com',
+    'Factor': 'https://logo.clearbit.com/factor75.com',
+    'Green Chef': 'https://logo.clearbit.com/greenchef.com',
+    'Purple Carrot': 'https://logo.clearbit.com/purplecarrot.com',
+    'Gobble': 'https://logo.clearbit.com/gobble.com',
+    'Daily Harvest': 'https://logo.clearbit.com/daily-harvest.com',
+    'ButcherBox': 'https://logo.clearbit.com/butcherbox.com',
     
     // Security
-    'NordVPN': 'https://upload.wikimedia.org/wikipedia/commons/9/95/NordVPN_logo_icon.svg',
-    'ExpressVPN': 'https://upload.wikimedia.org/wikipedia/commons/5/5a/ExpressVPN_logo.svg',
-    '1Password': 'https://upload.wikimedia.org/wikipedia/commons/9/9d/1Password_company_logo.svg',
-    'LastPass': 'https://upload.wikimedia.org/wikipedia/commons/e/e5/LastPass_logo.svg',
+    'NordVPN': 'https://logo.clearbit.com/nordvpn.com',
+    'ExpressVPN': 'https://logo.clearbit.com/expressvpn.com',
+    '1Password': 'https://logo.clearbit.com/1password.com',
+    'LastPass': 'https://logo.clearbit.com/lastpass.com',
+    'Bitwarden': 'https://logo.clearbit.com/bitwarden.com',
+    'Dashlane': 'https://logo.clearbit.com/dashlane.com',
     
     // News
-    'New York Times': 'https://upload.wikimedia.org/wikipedia/commons/7/77/The_New_York_Times_logo.png',
-    'Wall Street Journal': 'https://upload.wikimedia.org/wikipedia/commons/2/2c/The_Wall_Street_Journal_logo.svg',
-    'Washington Post': 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Washington_Post_Logo.svg'
+    'The New York Times': 'https://logo.clearbit.com/nytimes.com',
+    'New York Times': 'https://logo.clearbit.com/nytimes.com',
+    'The Wall Street Journal': 'https://logo.clearbit.com/wsj.com',
+    'Wall Street Journal': 'https://logo.clearbit.com/wsj.com',
+    'The Washington Post': 'https://logo.clearbit.com/washingtonpost.com',
+    'Washington Post': 'https://logo.clearbit.com/washingtonpost.com',
+    'The Athletic': 'https://logo.clearbit.com/theathletic.com',
+    'The Atlantic': 'https://logo.clearbit.com/theatlantic.com',
+    'The Economist': 'https://logo.clearbit.com/economist.com',
+    
+    // Social Media
+    'Snapchat': 'https://logo.clearbit.com/snapchat.com',
+    'Twitter': 'https://logo.clearbit.com/twitter.com',
+    'Reddit': 'https://logo.clearbit.com/reddit.com',
+    'LinkedIn': 'https://logo.clearbit.com/linkedin.com',
+    'Instagram': 'https://logo.clearbit.com/instagram.com',
+    'Facebook': 'https://logo.clearbit.com/facebook.com',
+    'Telegram': 'https://logo.clearbit.com/telegram.org',
+    'WhatsApp': 'https://logo.clearbit.com/whatsapp.com',
+    'WeChat': 'https://logo.clearbit.com/wechat.com',
+    'TikTok': 'https://logo.clearbit.com/tiktok.com',
+    
+    // Software & Productivity
+    'Google Workspace': 'https://logo.clearbit.com/google.com',
+    'Microsoft 365': 'https://logo.clearbit.com/microsoft.com',
+    'Office 365': 'https://logo.clearbit.com/microsoft.com',
+    'Dropbox Plus': 'https://logo.clearbit.com/dropbox.com',
+    'Dropbox Professional': 'https://logo.clearbit.com/dropbox.com',
+    'Google': 'https://logo.clearbit.com/google.com',
+    'Amazon': 'https://logo.clearbit.com/amazon.com',
+    'Apple': 'https://logo.clearbit.com/apple.com',
+    
+    // Additional services with logo mappings
+    'ClickUp': 'https://logo.clearbit.com/clickup.com',
+    'Wrike': 'https://logo.clearbit.com/wrike.com',
+    'Airtable': 'https://logo.clearbit.com/airtable.com',
+    'Smartsheet': 'https://logo.clearbit.com/smartsheet.com',
+    'Basecamp': 'https://logo.clearbit.com/basecamp.com',
+    'Teamwork': 'https://logo.clearbit.com/teamwork.com',
+    'Linear': 'https://logo.clearbit.com/linear.app',
+    'Loom': 'https://logo.clearbit.com/loom.com',
+    'HubSpot': 'https://logo.clearbit.com/hubspot.com',
+    'Mailchimp': 'https://logo.clearbit.com/mailchimp.com',
+    
+    // Development
+    'GitHub': 'https://logo.clearbit.com/github.com',
+    'GitLab': 'https://logo.clearbit.com/gitlab.com',
+    'Bitbucket': 'https://logo.clearbit.com/bitbucket.org',
+    'Jira': 'https://logo.clearbit.com/atlassian.com',
+    'Confluence': 'https://logo.clearbit.com/atlassian.com',
+    'Vercel': 'https://logo.clearbit.com/vercel.com',
+    'Netlify': 'https://logo.clearbit.com/netlify.com',
+    'Heroku': 'https://logo.clearbit.com/heroku.com',
+    'DigitalOcean': 'https://logo.clearbit.com/digitalocean.com',
+    'AWS': 'https://logo.clearbit.com/amazonaws.com',
+    'Cloudflare': 'https://logo.clearbit.com/cloudflare.com',
+    
+    // Communication
+    'Telegram': 'https://logo.clearbit.com/telegram.org',
+    'Signal': 'https://logo.clearbit.com/signal.org',
+    'LINE': 'https://logo.clearbit.com/line.me',
+    'Viber': 'https://logo.clearbit.com/viber.com',
+    'WeChat': 'https://logo.clearbit.com/wechat.com',
+    'Skype': 'https://logo.clearbit.com/skype.com',
+    
+    // Additional Streaming
+    'Showtime': 'https://logo.clearbit.com/showtime.com',
+    'Starz': 'https://logo.clearbit.com/starz.com',
+    'Shudder': 'https://logo.clearbit.com/shudder.com',
+    'AMC+': 'https://logo.clearbit.com/amcplus.com',
+    'Mubi': 'https://logo.clearbit.com/mubi.com',
+    'Criterion Channel': 'https://logo.clearbit.com/criterionchannel.com',
+    'Sundance Now': 'PLACEHOLDER: Add Sundance Now logo URL',
+    'Acorn TV': 'PLACEHOLDER: Add Acorn TV logo URL',
+    'BritBox': 'PLACEHOLDER: Add BritBox logo URL',
+    
+    // Music additions
+    'Deezer': 'https://logo.clearbit.com/deezer.com',
+    'SiriusXM': 'https://logo.clearbit.com/siriusxm.com',
+    'Pandora': 'https://logo.clearbit.com/pandora.com',
+    'Qobuz': 'https://logo.clearbit.com/qobuz.com',
+    'SoundCloud': 'https://logo.clearbit.com/soundcloud.com',
+    'Napster': 'PLACEHOLDER: Add Napster logo URL',
+    'KKBox': 'PLACEHOLDER: Add KKBox logo URL',
+    'iHeartRadio': 'https://logo.clearbit.com/iheart.com',
+    'Audible': 'https://logo.clearbit.com/audible.com',
+    
+    // Photo/Video
+    'VSCO': 'https://logo.clearbit.com/vsco.co',
+    'Adobe Lightroom': 'https://logo.clearbit.com/adobe.com',
+    'Capture One': 'PLACEHOLDER: Add Capture One logo URL',
+    'Pixelmator': 'PLACEHOLDER: Add Pixelmator logo URL',
+    'Affinity': 'PLACEHOLDER: Add Affinity logo URL',
+    
+    // VPN additions
+    'Surfshark': 'https://logo.clearbit.com/surfshark.com',
+    'ProtonVPN': 'https://logo.clearbit.com/protonvpn.com',
+    'CyberGhost': 'PLACEHOLDER: Add CyberGhost logo URL',
+    'Private Internet Access': 'PLACEHOLDER: Add PIA logo URL',
+    'IPVanish': 'PLACEHOLDER: Add IPVanish logo URL',
+    
+    // Finance
+    'YNAB': 'PLACEHOLDER: Add YNAB logo URL',
+    'Mint': 'PLACEHOLDER: Add Mint logo URL',
+    'Personal Capital': 'PLACEHOLDER: Add Personal Capital logo URL',
+    'Credit Karma': 'https://logo.clearbit.com/creditkarma.com',
+    
+    // Email
+    'ProtonMail': 'https://logo.clearbit.com/protonmail.com',
+    'Tutanota': 'PLACEHOLDER: Add Tutanota logo URL',
+    'FastMail': 'PLACEHOLDER: Add FastMail logo URL',
+    
+    // News additions
+    'Financial Times': 'https://logo.clearbit.com/ft.com',
+    'Bloomberg': 'https://logo.clearbit.com/bloomberg.com',
+    'Politico': 'https://logo.clearbit.com/politico.com',
+    'Reuters': 'https://logo.clearbit.com/reuters.com',
+    'CNN': 'https://logo.clearbit.com/cnn.com',
+    'The Guardian': 'https://logo.clearbit.com/theguardian.com',
+    
+    // Read/audiobooks
+    'Kindle Unlimited': 'https://logo.clearbit.com/amazon.com',
+    'Scribd': 'https://logo.clearbit.com/scribd.com',
+    'Audible': 'https://logo.clearbit.com/audible.com',
+    'Blinkist': 'https://logo.clearbit.com/blinkist.com',
+    'Medium': 'https://logo.clearbit.com/medium.com',
+    'Pocket': 'https://logo.clearbit.com/getpocket.com'
 };
 
 function getCompanyLogo(companyName) {
@@ -212,29 +412,43 @@ function getCompanyLogo(companyName) {
     
     // Try exact match first
     if (logoMapping[companyName]) {
-        return logoMapping[companyName];
+        const url = logoMapping[companyName];
+        // Handle PLACEHOLDER entries
+        if (url.startsWith('PLACEHOLDER:')) {
+            return null; // Return null so it doesn't try to load an invalid URL
+        }
+        return url;
     }
     
     // Try partial matches
     for (const [serviceName, logoUrl] of Object.entries(logoMapping)) {
         if (companyName.toLowerCase().includes(serviceName.toLowerCase()) || 
             serviceName.toLowerCase().includes(companyName.toLowerCase())) {
-            return logoUrl;
+            if (logoUrl && !logoUrl.startsWith('PLACEHOLDER:')) {
+                return logoUrl;
+            }
         }
     }
     
     // Try getting company name from subscription (handle tier suffixes)
-    const baseName = companyName.split(' - ')[0].split(' Basic')[0].split(' Standard')[0].split(' Premium')[0].split(' Individual')[0].split(' Family')[0].split(' Business')[0].split(' Pro')[0].split(' Plus')[0].split(' Max')[0];
+    const baseName = companyName.split(' - ')[0]
+        .split(' Basic')[0].split(' Standard')[0].split(' Premium')[0]
+        .split(' Individual')[0].split(' Family')[0].split(' Business')[0]
+        .split(' Pro')[0].split(' Plus')[0].split(' Max')[0].split('+')[0];
     if (logoMapping[baseName]) {
-        return logoMapping[baseName];
+        const url = logoMapping[baseName];
+        if (url && !url.startsWith('PLACEHOLDER:')) {
+            return url;
+        }
     }
     
     return null;
 }
 
-// Preload logos for faster display
+// Preload logos for faster display (skip placeholders)
 function preloadLogos() {
-    const logosToPreload = Object.values(logoMapping).filter(url => url);
+    const logosToPreload = Object.values(logoMapping)
+        .filter(url => url && !url.startsWith('PLACEHOLDER:'));
     logosToPreload.forEach(url => {
         const img = new Image();
         img.src = url;
@@ -449,6 +663,7 @@ const popularServices = {
         category: 'Productivity'
     },
     'Dashlane': { cost: 4.99, category: 'Productivity' },
+    'Calendly': { cost: 10, category: 'Productivity' },
     'Calendly Premium': { cost: 10, category: 'Productivity' },
     'Zoom': {
         options: [
@@ -458,6 +673,8 @@ const popularServices = {
         ],
         category: 'Productivity'
     },
+    'Zoom Pro': { cost: 14.99, category: 'Productivity' },
+    'Zoom Business': { cost: 19.99, category: 'Productivity' },
     'Canva': {
         options: [
             { tier: 'Free', cost: 0 },
@@ -889,16 +1106,42 @@ const popularServices = {
     'Topaz Labs': { cost: 79, category: 'Photo Editing' }
 };
 
-function convertPrice(usdPrice) {
-    if (!usdPrice || isNaN(usdPrice)) return 0;
-    const rate = exchangeRates[currentCurrency]?.rate || 1;
-    return usdPrice * rate;
+function convertPrice(price, fromCurrency = 'USD') {
+    if (!price || isNaN(price)) return 0;
+    // First convert to USD (base currency), then to display currency
+    const fromRate = exchangeRates[fromCurrency]?.rate || 1;
+    const toRate = exchangeRates[currentCurrency]?.rate || 1;
+    
+    const usdPrice = price / fromRate;
+    return usdPrice * toRate;
 }
 
 function formatCurrency(amount) {
-    if (!amount || isNaN(amount)) return `${exchangeRates[currentCurrency].symbol}0.00`;
+    if (!amount || isNaN(amount)) return `${exchangeRates[currentCurrency]?.symbol || '$'}0.00`;
     const symbol = exchangeRates[currentCurrency]?.symbol || '$';
     return `${symbol}${amount.toFixed(2)}`;
+}
+
+// Add smooth update class to currency display elements
+function addCurrencyUpdateAnimation() {
+    const elements = document.querySelectorAll('.card-cost, .quick-add-price, .card-metric-value, .stat-box strong, .currency-value, .modal-price, .comparison-item-value');
+    elements.forEach(el => {
+        if (el) {
+            el.classList.add('currency-updating');
+            setTimeout(() => {
+                if (el) el.classList.remove('currency-updating');
+            }, 600);
+        }
+    });
+    
+    // Also animate bar chart
+    const canvas = document.getElementById('subscription-chart');
+    if (canvas) {
+        canvas.classList.add('currency-updating');
+        setTimeout(() => {
+            canvas.classList.remove('currency-updating');
+        }, 600);
+    }
 }
 
 function adjustBrightness(hex, percent) {
@@ -918,11 +1161,15 @@ function loadSubscriptions() {
         const saved = localStorage.getItem('subscriblytics-data');
         if (saved) {
             subscriptions = JSON.parse(saved);
+            // Set default currency for old subscriptions that don't have one
+            subscriptions.forEach(sub => {
+                if (!sub.currency) sub.currency = 'USD';
+            });
             render();
         }
         
-        // Load saved currency
-        const savedCurrency = localStorage.getItem('subscriblytics-currency');
+        // Load saved display currency
+        const savedCurrency = localStorage.getItem('subscriblytics-display-currency');
         if (savedCurrency && exchangeRates[savedCurrency]) {
             currentCurrency = savedCurrency;
             currencySelector.value = savedCurrency;
@@ -955,7 +1202,7 @@ const sortFilter = document.getElementById('sort-filter');
 // === Event Listeners ===
 form.addEventListener('submit', handleFormSubmit);
 subscriptionList.addEventListener('click', handleListClick);
-serviceSearch.addEventListener('input', handleServiceSearch);
+serviceSearch.addEventListener('input', debounce(handleServiceSearch, 150));
 currencySelector.addEventListener('change', handleCurrencyChange);
 categoryFilter.addEventListener('change', handleCategoryFilter);
 sortFilter.addEventListener('change', handleSortFilter);
@@ -989,6 +1236,9 @@ function initializeQuickAdd() {
 function handleServiceSearch(e) {
     const query = e.target.value.toLowerCase().trim();
     
+    // Show loading state
+    quickAddGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">Searching...</div>';
+    
     let filtered = {};
     
     Object.keys(popularServices).forEach(name => {
@@ -1004,19 +1254,36 @@ function handleServiceSearch(e) {
     });
     
     filteredServices = filtered;
-    renderQuickAdd();
+    
+    // Small delay for better UX
+    setTimeout(() => {
+        renderQuickAdd();
+    }, 50);
 }
 
 function handleCurrencyChange(e) {
-    currentCurrency = e.target.value;
-    // Save to localStorage
-    localStorage.setItem('subscriblytics-currency', currentCurrency);
-    // Force re-render everything to update currency
-    render();
-    renderQuickAdd();
+    const newCurrency = e.target.value;
     
-    // Re-render chart if it exists
-    renderChart();
+    // Add smooth transition effect
+    document.body.classList.add('currency-updating');
+    
+    // Update currency
+    currentCurrency = newCurrency;
+    localStorage.setItem('subscriblytics-display-currency', currentCurrency);
+    
+    // Smoothly animate currency change
+    setTimeout(() => {
+        // Force re-render everything to update currency
+        render();
+        renderQuickAdd();
+        renderChart();
+        addCurrencyUpdateAnimation();
+        
+        // Remove transition class
+        setTimeout(() => {
+            document.body.classList.remove('currency-updating');
+        }, 600);
+    }, 50);
 }
 
 function handleCategoryFilter(e) {
@@ -1064,7 +1331,10 @@ function renderQuickAdd() {
         // Get company logo
         const baseName = name.split(' ')[0]; // Get first word for logo matching
         const logoUrl = getCompanyLogo(name);
-        const logoHTML = logoUrl ? `<img src="${logoUrl}" alt="${name}" class="company-logo-small" onerror="this.style.display='none'">` : '';
+        // Only show logo if we have a valid URL
+        const logoHTML = logoUrl && !logoUrl.startsWith('PLACEHOLDER:') 
+            ? `<img src="${logoUrl}" alt="${name}" class="company-logo-small" onerror="this.style.display='none'">` 
+            : '';
         
         // Show price range if multiple tiers
         let priceText = `${formatCurrency(displayPrice)}/mo`;
@@ -1091,8 +1361,21 @@ function renderQuickAdd() {
 function showUsageModal(name, data) {
     // Check if already exists (considering tiers)
     const checkName = data.options ? name : name.split(' - ')[0];
-    if (subscriptions.find(sub => sub.name.split(' - ')[0] === checkName)) {
-        showNotification(`${name} is already in your subscriptions!`, 'warning');
+    const existing = subscriptions.find(sub => sub.name.split(' - ')[0] === checkName);
+    if (existing) {
+        const modal = confirm(`${name} is already in your subscriptions!\n\nWould you like to view it?`);
+        if (modal) {
+            // Scroll to existing subscription
+            setTimeout(() => {
+                const card = document.querySelector(`[data-id="${existing.id}"]`);
+                if (card) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.style.animation = 'none';
+                    card.offsetHeight; // Trigger reflow
+                    card.style.animation = 'pulse 0.6s ease-out';
+                }
+            }, 100);
+        }
         return;
     }
     
@@ -1173,6 +1456,7 @@ function showUsageModal(name, data) {
             id: Date.now().toString(),
             name: finalName,
             cost: finalCost,
+            currency: currentCurrency, // Use current display currency for quick-add
             billingCycle: 'monthly',
             usage: usage,
             usageFrequency: 'per-month'
@@ -1220,15 +1504,19 @@ function handleFormSubmit(e) {
             throw new Error('Invalid input data');
         }
         
+        const subscriptionCurrency = formData.get('subscription-currency') || 'USD';
+        
         const subscription = {
             id: Date.now().toString(),
             name: name,
             cost: cost,
+            currency: subscriptionCurrency,
             billingCycle: formData.get('billing-cycle'),
             usage: usage,
             usageFrequency: formData.get('usage-frequency')
         };
 
+        addToHistory();
         subscriptions.push(subscription);
         saveSubscriptions();
         render();
@@ -1241,6 +1529,46 @@ function handleFormSubmit(e) {
 }
 
 function handleListClick(e) {
+    // Handle bulk delete
+    if (e.target.id === 'bulk-delete-btn') {
+        if (selectedSubscriptionIds.size === 0) return;
+        
+        const count = selectedSubscriptionIds.size;
+        if (confirm(`Delete ${count} subscription${count > 1 ? 's' : ''}?`)) {
+            addToHistory();
+            subscriptions = subscriptions.filter(sub => !selectedSubscriptionIds.has(sub.id));
+            selectedSubscriptionIds.clear();
+            saveSubscriptions();
+            render();
+            showNotification(`${count} subscription${count > 1 ? 's' : ''} deleted`, 'success');
+        }
+        return;
+    }
+    
+    // Handle select all checkbox
+    if (e.target.id === 'select-all') {
+        const isChecked = e.target.checked;
+        if (isChecked) {
+            subscriptions.forEach(sub => selectedSubscriptionIds.add(sub.id));
+        } else {
+            selectedSubscriptionIds.clear();
+        }
+        render();
+        return;
+    }
+    
+    // Handle individual subscription checkboxes
+    if (e.target.classList.contains('subscription-checkbox')) {
+        const subscriptionId = e.target.dataset.subscriptionId;
+        if (e.target.checked) {
+            selectedSubscriptionIds.add(subscriptionId);
+        } else {
+            selectedSubscriptionIds.delete(subscriptionId);
+        }
+        render();
+        return;
+    }
+    
     if (e.target.classList.contains('btn-delete')) {
         const card = e.target.closest('.subscription-card');
         if (!card) return;
@@ -1249,6 +1577,7 @@ function handleListClick(e) {
         const subscription = subscriptions.find(sub => sub.id === subscriptionId);
         
         if (subscription && confirm(`Remove ${subscription.name}?`)) {
+            addToHistory();
             subscriptions = subscriptions.filter(sub => sub.id !== subscriptionId);
             saveSubscriptions();
             render();
@@ -1336,6 +1665,7 @@ function showEditModal(subscription) {
         subscription.usage = usage;
         subscription.usageFrequency = formData.get('usage-frequency');
         
+        addToHistory();
         saveSubscriptions();
         render();
         modal.remove();
@@ -1344,20 +1674,34 @@ function showEditModal(subscription) {
 }
 
 function showNotification(message, type = 'info') {
+    const colors = {
+        success: { bg: '#10b981', icon: '✓' },
+        error: { bg: '#ef4444', icon: '✕' },
+        warning: { bg: '#f59e0b', icon: '⚠' },
+        info: { bg: '#3b82f6', icon: 'ℹ' }
+    };
+    
+    const color = colors[type] || colors.info;
+    
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
-    notification.textContent = message;
+    notification.innerHTML = `<span style="margin-right: 8px; font-weight: bold;">${color.icon}</span>${message}`;
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
         padding: 1rem 1.5rem;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#f59e0b'};
+        background: ${color.bg};
         color: white;
-        border-radius: 8px;
+        border-radius: 12px;
         z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        max-width: 400px;
+        backdrop-filter: blur(10px);
     `;
     
     document.body.appendChild(notification);
@@ -1365,7 +1709,7 @@ function showNotification(message, type = 'info') {
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    }, type === 'info' ? 2500 : 3000);
 }
 
 function render() {
@@ -1391,63 +1735,96 @@ function renderEmptyState() {
     summaryView.innerHTML = `
         <div class="empty-state">
             <h3>No subscriptions yet</h3>
-            <p>Add subscriptions to get started!</p>
+            <p>Add subscriptions from the popular services below or use the custom form to get started!</p>
         </div>
     `;
 }
 
 function renderSummary() {
     let totalMonthlyCost = 0;
+    let totalValue = 0; // Sum of cost per use
+    let monthlyByCycle = { monthly: 0, annual: 0 };
+    
     subscriptions.forEach(sub => {
-        const monthlyCost = sub.billingCycle === 'annually' ? sub.cost / 12 : sub.cost;
-        totalMonthlyCost += monthlyCost;
+        const subMonthlyCost = sub.billingCycle === 'annually' ? sub.cost / 12 : sub.cost;
+        // Convert each subscription's cost to display currency
+        const displayCost = convertPrice(subMonthlyCost, sub.currency || 'USD');
+        totalMonthlyCost += displayCost;
+        
+        const costPerUse = calculateCostPerUse(sub);
+        const displayCostPerUse = convertPrice(costPerUse, sub.currency || 'USD');
+        totalValue += displayCostPerUse;
+        
+        if (sub.billingCycle === 'monthly') {
+            monthlyByCycle.monthly += displayCost;
+        } else {
+            monthlyByCycle.annual += displayCost;
+        }
     });
 
     const yearlyCost = totalMonthlyCost * 12;
     const dailyCost = totalMonthlyCost / 30;
+    const avgCostPerUse = subscriptions.length > 0 ? totalValue / subscriptions.length : 0;
 
-    // Calculate costs in different currencies
-    const currencyCosts = {};
-    Object.keys(exchangeRates).forEach(currency => {
-        if (currency !== currentCurrency) {
-            currencyCosts[currency] = {
-                monthly: totalMonthlyCost * exchangeRates[currency].rate,
-                yearly: yearlyCost * exchangeRates[currency].rate,
-                daily: dailyCost * exchangeRates[currency].rate
-            };
-        }
+    // Advanced statistics
+    const categories = {};
+    subscriptions.forEach(sub => {
+        const category = popularServices[sub.name]?.category || 'Other';
+        if (!categories[category]) categories[category] = 0;
+        const subMonthlyCost = sub.billingCycle === 'annually' ? sub.cost / 12 : sub.cost;
+        const displayCost = convertPrice(subMonthlyCost, sub.currency || 'USD');
+        categories[category] += displayCost;
     });
 
-    let otherCurrenciesHTML = '';
-    if (Object.keys(currencyCosts).length > 0) {
-        otherCurrenciesHTML = `
+    let categoryBreakdown = '';
+    if (Object.keys(categories).length > 0) {
+        categoryBreakdown = `
             <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-primary);">Other Currencies</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
-                    ${Object.entries(currencyCosts).slice(0, 3).map(([currency, costs]) => `
-                        <div style="padding: 0.75rem; background: rgba(255, 255, 255, 0.5); border-radius: 6px; border: 1px solid var(--border-color);">
-                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">${currency}</div>
-                            <div style="font-weight: 600; color: var(--text-primary);">${exchangeRates[currency].symbol}${costs.monthly.toFixed(2)}/mo</div>
-                        </div>
-                    `).join('')}
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; font-weight: 600; color: var(--text-primary);">Cost by Category</h3>
+                <div style="display: grid; gap: 0.5rem;">
+                    ${Object.entries(categories).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([cat, cost]) => {
+                        const percentage = ((cost / totalMonthlyCost) * 100).toFixed(1);
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(255, 255, 255, 0.5); border-radius: 6px; border: 1px solid var(--border-color);">
+                                <span style="font-size: 0.875rem; color: var(--text-secondary);">${cat}</span>
+                                <div style="display: flex; gap: 1rem; align-items: center;">
+                                    <span style="font-weight: 600; font-size: 0.875rem; color: var(--text-primary);">${formatCurrency(cost)}</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);">${percentage}%</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
     }
 
+    // Format currency values with smooth transitions
+    const formatCurrencySmooth = (value) => {
+        return formatCurrency(value);
+    };
+    
     summaryView.innerHTML = `
-        <h2>Overview</h2>
+        <div class="summary-header">
+            <h2>Overview</h2>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">
+                <span>Currency:</span>
+                <select id="overview-currency-selector">
+                    <!-- Options populated dynamically -->
+                </select>
+            </div>
+        </div>
         <div class="summary-stats">
             <div class="stat-box">
-                <strong>${formatCurrency(convertPrice(totalMonthlyCost))}</strong>
+                <strong class="currency-value">${formatCurrencySmooth(totalMonthlyCost)}</strong>
                 <span>Monthly Cost</span>
             </div>
             <div class="stat-box">
-                <strong>${formatCurrency(convertPrice(yearlyCost))}</strong>
+                <strong class="currency-value">${formatCurrencySmooth(yearlyCost)}</strong>
                 <span>Yearly Cost</span>
             </div>
             <div class="stat-box">
-                <strong>${formatCurrency(convertPrice(dailyCost))}</strong>
+                <strong class="currency-value">${formatCurrencySmooth(dailyCost)}</strong>
                 <span>Daily Cost</span>
             </div>
             <div class="stat-box">
@@ -1455,8 +1832,34 @@ function renderSummary() {
                 <span>Subscriptions</span>
             </div>
         </div>
-        ${otherCurrenciesHTML}
+        ${categoryBreakdown}
     `;
+    
+    // Initialize overview currency selector
+    const overviewSelector = document.getElementById('overview-currency-selector');
+    if (overviewSelector) {
+        overviewSelector.innerHTML = '';
+        Object.keys(exchangeRates).forEach(currency => {
+            const option = document.createElement('option');
+            option.value = currency;
+            option.textContent = `${currency} (${exchangeRates[currency].symbol})`;
+            if (currency === currentCurrency) option.selected = true;
+            overviewSelector.appendChild(option);
+        });
+        
+        overviewSelector.addEventListener('change', (e) => {
+            const newCurrency = e.target.value;
+            currentCurrency = newCurrency;
+            localStorage.setItem('subscriblytics-display-currency', currentCurrency);
+            
+            // Update main currency selector
+            const mainSelector = document.getElementById('currency-selector');
+            if (mainSelector) mainSelector.value = newCurrency;
+            
+            // Trigger currency update
+            handleCurrencyChange({ target: { value: newCurrency } });
+        });
+    }
 }
 
 function renderChart() {
@@ -1469,7 +1872,8 @@ function renderChart() {
         </div>
     `;
 
-    setTimeout(() => {
+    // Use requestAnimationFrame for smoother rendering
+    requestAnimationFrame(() => {
         try {
             const canvas = document.getElementById('cost-chart');
             if (!canvas) return;
@@ -1538,21 +1942,24 @@ function renderChart() {
                 
                 // Text on bar
                 context.fillStyle = textColor;
-                    context.font = 'bold 10px Inter';
+                    context.font = 'bold 10px "OpenAI Sans", sans-serif';
                     context.textAlign = 'center';
                 context.fillText(costText, x + barWidth / 2, y - 8);
                 
-                // Company name label below bar (no rotation, centered)
+                // Company name label below bar (truncated if too long)
                 context.fillStyle = labelColor;
-                context.font = '9px Inter';
+                context.font = '9px "OpenAI Sans", sans-serif';
                 context.textAlign = 'center';
                 context.textBaseline = 'top';
-                const label = item.name.substring(0, Math.min(20, 60 / barWidth));
+                let label = item.name.split(' - ')[0]; // Get company name without tier
+                if (label.length > 15) label = label.substring(0, 12) + '...';
                 context.fillText(label, x + barWidth / 2, canvas.height - padding / 2 + 3);
             });
             
             // Get theme-aware stroke color
             const strokeColor = isDark ? '#3a3a3a' : '#e5e5e5';
+            
+            // Draw axes
             context.strokeStyle = strokeColor;
             context.lineWidth = 1;
             context.beginPath();
@@ -1560,10 +1967,27 @@ function renderChart() {
             context.lineTo(padding, canvas.height - padding);
             context.lineTo(canvas.width - padding, canvas.height - padding);
             context.stroke();
+            
+            // Add Y-axis label (Cost)
+            context.save();
+            context.translate(15, canvas.height / 2);
+            context.rotate(-Math.PI / 2);
+            context.fillStyle = labelColor;
+            context.font = 'bold 11px "OpenAI Sans", sans-serif';
+            context.textAlign = 'center';
+            context.fillText('Monthly Cost', 0, 0);
+            context.restore();
+            
+            // Add X-axis label (Service)
+            context.fillStyle = labelColor;
+            context.font = 'bold 11px "OpenAI Sans", sans-serif';
+            context.textAlign = 'center';
+            context.fillText('Service', canvas.width / 2, canvas.height - 5);
+            
         } catch (error) {
             console.error('Error rendering chart:', error);
         }
-    }, 50);
+    });
 }
 
 function renderComparison() {
@@ -1600,11 +2024,31 @@ function renderComparison() {
 }
 
 function renderSubscriptionList() {
-    subscriptionList.innerHTML = '';
-    
     const sortedSubs = [...subscriptions].sort((a, b) => 
         calculateCostPerUse(a) - calculateCostPerUse(b)
     );
+    
+    // Clear and add bulk controls
+    subscriptionList.innerHTML = '';
+    
+    // Add bulk selection controls if we have subscriptions
+    if (sortedSubs.length > 0) {
+        const bulkControlsHTML = `
+            <div class="bulk-controls" style="margin-bottom: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(20px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="select-all" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="select-all" style="font-weight: 600; cursor: pointer;">Select All</label>
+                </div>
+                <span id="selected-count" style="color: var(--text-secondary);">
+                    ${selectedSubscriptionIds.size} selected
+                </span>
+                <button id="bulk-delete-btn" class="btn-delete" ${selectedSubscriptionIds.size === 0 ? 'disabled' : ''} style="opacity: ${selectedSubscriptionIds.size === 0 ? '0.5' : '1'};">
+                    Delete Selected
+                </button>
+            </div>
+        `;
+        subscriptionList.innerHTML = bulkControlsHTML;
+    }
     
     sortedSubs.forEach((subscription, index) => {
         const costPerUse = calculateCostPerUse(subscription);
@@ -1615,20 +2059,26 @@ function renderSubscriptionList() {
         card.dataset.id = subscription.id;
         card.style.animationDelay = `${index * 0.05}s`;
         
-        const monthlyCost = subscription.billingCycle === 'annually' 
+        const subMonthlyCost = subscription.billingCycle === 'annually' 
             ? subscription.cost / 12 
             : subscription.cost;
         
-        const displayMonthlyCost = convertPrice(monthlyCost);
-        const displayCostPerUse = convertPrice(costPerUse);
+        const subscriptionCurrency = subscription.currency || 'USD';
+        const displayMonthlyCost = convertPrice(subMonthlyCost, subscriptionCurrency);
+        const displayCostPerUse = convertPrice(costPerUse, subscriptionCurrency);
         
         // Get company logo
         const baseName = subscription.name.split(' - ')[0];
         const logoUrl = getCompanyLogo(baseName);
-        const logoHTML = logoUrl ? `<img src="${logoUrl}" alt="${baseName}" class="company-logo" onerror="this.style.display='none'">` : '';
+        // Only show logo if we have a valid URL
+        const logoHTML = logoUrl && !logoUrl.startsWith('PLACEHOLDER:') 
+            ? `<img src="${logoUrl}" alt="${baseName}" class="company-logo" onerror="this.style.display='none'">` 
+            : '';
         
+        const isSelected = selectedSubscriptionIds.has(subscription.id);
         card.innerHTML = `
             <div class="card-header">
+                <input type="checkbox" class="subscription-checkbox" data-subscription-id="${subscription.id}" ${isSelected ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;">
                 ${logoHTML}
                 <div class="card-title-wrapper">
                 <h3 class="card-title">${escapeHtml(subscription.name)}</h3>
@@ -1707,21 +2157,34 @@ loadSubscriptions();
 // Initialize currency selector with all currencies
 function initializeCurrencySelector() {
     const currencySelector = document.getElementById('currency-selector');
+    const subscriptionCurrencySelector = document.getElementById('subscription-currency');
+    
     if (!currencySelector) return;
     
     // Clear existing options
     currencySelector.innerHTML = '';
     
-    // Add all currency options
-    Object.keys(exchangeRates).forEach(currency => {
-        const option = document.createElement('option');
-        option.value = currency;
-        option.textContent = `${currency} (${exchangeRates[currency].symbol}) ${exchangeRates[currency].name}`;
-        currencySelector.appendChild(option);
-    });
+    // Helper function to add options
+    const addOptions = (selector) => {
+        Object.keys(exchangeRates).forEach(currency => {
+            const option = document.createElement('option');
+            option.value = currency;
+            option.textContent = `${currency} (${exchangeRates[currency].symbol}) ${exchangeRates[currency].name}`;
+            selector.appendChild(option);
+        });
+    };
+    
+    addOptions(currencySelector);
+    
+    // Also add to subscription currency selector
+    if (subscriptionCurrencySelector) {
+        subscriptionCurrencySelector.innerHTML = '';
+        addOptions(subscriptionCurrencySelector);
+        subscriptionCurrencySelector.value = currentCurrency;
+    }
     
     // Set current currency
-    const savedCurrency = localStorage.getItem('subscriblytics-currency');
+    const savedCurrency = localStorage.getItem('subscriblytics-display-currency');
     if (savedCurrency && exchangeRates[savedCurrency]) {
         currentCurrency = savedCurrency;
         currencySelector.value = savedCurrency;
@@ -1846,6 +2309,9 @@ importBtn?.addEventListener('change', (e) => {
 const shortcutsModal = document.getElementById('shortcuts-modal');
 const shortcutsModalClose = shortcutsModal?.querySelector('.btn-close');
 
+// Initialize history
+addToHistory();
+
 function openShortcutsModal() {
     if (shortcutsModal) {
         shortcutsModal.classList.remove('hidden');
@@ -1875,6 +2341,20 @@ document.addEventListener('keydown', (e) => {
         return;
     }
     
+    // Ctrl/Cmd + Z - Undo
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+    }
+    
+    // Ctrl/Cmd + Shift + Z - Redo
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        redo();
+        return;
+    }
+    
     // Ctrl/Cmd + E - Export
     if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
         e.preventDefault();
@@ -1893,8 +2373,8 @@ document.addEventListener('keydown', (e) => {
         serviceSearch?.focus();
     }
     
-    // ? - Show shortcuts
-    if (e.key === '?' && !e.shiftKey) {
+    // Shift + ? - Show shortcuts
+    if (e.key === '?' && e.shiftKey) {
         e.preventDefault();
         openShortcutsModal();
     }
@@ -1912,6 +2392,141 @@ document.addEventListener('keydown', (e) => {
         serviceSearch?.focus();
     }
 });
+
+// === Enhanced Glassmorphic Mouse Tracking Effect ===
+let mouseX = 0;
+let mouseY = 0;
+let shimmerElement = null;
+let gridInteractionElement = null;
+let refractionElement = null;
+let isActive = false;
+let rafId = null;
+let lastUpdate = 0;
+
+// Throttle for smooth 60fps updates
+const throttle = (func, limit) => {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+};
+
+function initGlassmorphicEffects() {
+    // Create shimmer element
+    shimmerElement = document.createElement('div');
+    shimmerElement.className = 'mouse-shimmer';
+    document.body.appendChild(shimmerElement);
+    
+    // Create grid interaction element
+    gridInteractionElement = document.createElement('div');
+    gridInteractionElement.className = 'grid-interaction';
+    document.body.appendChild(gridInteractionElement);
+    
+    // Create refraction effect
+    refractionElement = document.createElement('div');
+    refractionElement.className = 'glass-refraction';
+    document.body.appendChild(refractionElement);
+    
+    // Smooth animation function using requestAnimationFrame
+    const smoothUpdate = () => {
+        const now = performance.now();
+        if (now - lastUpdate < 16) {
+            rafId = requestAnimationFrame(smoothUpdate);
+            return;
+        }
+        lastUpdate = now;
+        
+        if (shimmerElement && isActive) {
+            shimmerElement.style.left = mouseX + 'px';
+            shimmerElement.style.top = mouseY + 'px';
+            shimmerElement.classList.add('active');
+        }
+        
+        if (gridInteractionElement && isActive) {
+            gridInteractionElement.style.left = mouseX + 'px';
+            gridInteractionElement.style.top = mouseY + 'px';
+            gridInteractionElement.classList.add('active');
+        }
+        
+        if (refractionElement && isActive) {
+            refractionElement.style.left = mouseX + 'px';
+            refractionElement.style.top = mouseY + 'px';
+            refractionElement.classList.add('active');
+        }
+        
+        rafId = requestAnimationFrame(smoothUpdate);
+    };
+    
+    // Start animation loop
+    smoothUpdate();
+    
+    // Track mouse movement with throttling
+    document.addEventListener('mousemove', throttle((e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        isActive = true;
+    }, 8));
+    
+    // Deactivate when mouse leaves window
+    document.addEventListener('mouseleave', () => {
+        isActive = false;
+        if (shimmerElement) shimmerElement.classList.remove('active');
+        if (gridInteractionElement) gridInteractionElement.classList.remove('active');
+        if (refractionElement) refractionElement.classList.remove('active');
+    });
+    
+    // Add enhanced ripple effect on click
+    document.addEventListener('click', (e) => {
+        createRipple(e.clientX, e.clientY);
+    });
+}
+
+function createRipple(x, y) {
+    const ripple = document.createElement('div');
+    ripple.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(150, 200, 255, 0.2) 50%, transparent 100%);
+        pointer-events: none;
+        z-index: 10000;
+        transform: translate(-50%, -50%);
+        animation: rippleExpand 0.8s ease-out;
+        mix-blend-mode: overlay;
+    `;
+    
+    document.body.appendChild(ripple);
+    
+    setTimeout(() => ripple.remove(), 800);
+}
+
+// Add enhanced ripple animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes rippleExpand {
+        from {
+            width: 0;
+            height: 0;
+            opacity: 1;
+        }
+        to {
+            width: 300px;
+            height: 300px;
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', initGlassmorphicEffects);
 
 // === Improved Analytics Features ===
 function getCategoryBreakdown() {

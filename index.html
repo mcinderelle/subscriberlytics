@@ -45,7 +45,7 @@
         <div class="header-content">
             <h1 class="logo-text">SUBSCRIBLYTICS</h1>
             <p class="tagline">Track and analyze your subscription value</p>
-            <p class="credits">Designed by <strong>Mayukhjit Chakraborty</strong></p>
+            <p class="credits">Designed by <strong>Mayukhjit Chakraborty</strong> | Press <kbd>Shift</kbd> + <kbd>?</kbd> for shortcuts</p>
         </div>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
             <svg class="theme-icon sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
@@ -138,6 +138,16 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label for="subscription-currency">Currency</label>
+                    <select id="subscription-currency" name="subscription-currency" required aria-required="true" title="Currency for this subscription">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                    <small style="display: block; margin-top: 0.375rem; color: var(--text-muted); font-size: 0.8125rem;">
+                        The cost will be stored in this currency and displayed in your selected currency
+                    </small>
+                </div>
+
                 <button type="submit" class="btn-primary">Add Subscription</button>
             </form>
             <div class="form-actions">
@@ -157,11 +167,12 @@
         <div class="shortcuts-content">
             <h3>Keyboard Shortcuts</h3>
             <ul class="shortcuts-list">
+                <li><kbd>Ctrl</kbd> + <kbd>Z</kbd> - Undo</li>
+                <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> - Redo</li>
                 <li><kbd>Ctrl</kbd> + <kbd>E</kbd> - Export data</li>
                 <li><kbd>Ctrl</kbd> + <kbd>I</kbd> - Import data</li>
-                <li><kbd>Ctrl</kbd> + <kbd>K</kbd> - Focus search</li>
-                <li><kbd>/</kbd> - Focus search</li>
-                <li><kbd>?</kbd> - Show shortcuts</li>
+                <li><kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>/</kbd> - Focus search</li>
+                <li><kbd>?</kbd> - Show this help</li>
                 <li><kbd>Esc</kbd> - Close modal</li>
             </ul>
             <button class="btn-close" aria-label="Close shortcuts">Close</button>
