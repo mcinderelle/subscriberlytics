@@ -479,16 +479,17 @@ header .tagline {
 /* === Quick Add Section === */
 .quick-add-section {
     grid-column: 1 / -1;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(30px);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
     padding: 1.5rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     animation: slideUp 0.8s ease 0.4s both;
 }
 
 [data-theme="dark"] .quick-add-section {
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(40, 40, 40, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @keyframes slideUp {
@@ -691,16 +692,17 @@ select {
 
 /* === Form Section === */
 .form-section {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(30px);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
     padding: 1.5rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     animation: slideUp 0.8s ease 0.5s both;
 }
 
 [data-theme="dark"] .form-section {
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(40, 40, 40, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .form-section h2 {
@@ -942,16 +944,17 @@ select {
 }
 
 .summary-container {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(30px);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
     padding: 1.5rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     animation: fadeIn 0.6s ease;
 }
 
 [data-theme="dark"] .summary-container {
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(40, 40, 40, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .summary-container h2 {
@@ -1018,16 +1021,17 @@ select {
 
 /* Chart Container */
 .chart-container {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(30px);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
     padding: 1.5rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     animation: slideUp 0.6s ease 0.1s both;
 }
 
 [data-theme="dark"] .chart-container {
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(40, 40, 40, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .chart-container h3 {
@@ -1049,19 +1053,20 @@ select {
 }
 
 .subscription-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(30px);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
     padding: 1.5rem;
     border-radius: 12px;
-    border: 1px solid var(--border-color);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
     animation: slideInLeft 0.5s ease both;
 }
 
 [data-theme="dark"] .subscription-card {
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(40, 40, 40, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @keyframes slideInLeft {
