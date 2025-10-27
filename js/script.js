@@ -56,6 +56,71 @@ fetchExchangeRates();
 
 // === Data Management ===
 let subscriptions = [];
+let logoCache = {};
+
+// Fetch company logo
+async function fetchCompanyLogo(companyName) {
+    if (logoCache[companyName]) {
+        return logoCache[companyName];
+    }
+    
+    try {
+        // Use DuckDuckGo Image API (free, no API key needed)
+        const searchQuery = encodeURIComponent(`${companyName} logo official`);
+        const url = `https://duckduckgo.com/?q=${searchQuery}&iax=images&ia=images&iar=images`;
+        
+        // For now, we'll use a placeholder approach since direct logo fetching from external APIs has CORS issues
+        // Use a simple fallback approach with known service logo mappings
+        const serviceLogoMap = {
+            'Netflix': 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
+            'Spotify': 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
+            'Disney+': 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
+            'Amazon Prime': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Prime_Video_logo.svg',
+            'HBO Max': 'https://logos-world.net/wp-content/uploads/2020/11/HBO-Max-Logo.png',
+            'Apple': 'https://www.apple.com/favicon-32x32.png',
+            'Microsoft': 'https://www.microsoft.com/favicon.ico',
+            'Adobe': 'https://www.adobe.com/favicon.ico',
+            'Disney': 'https://www.disney.com/favicon.ico',
+            'Pixar': 'https://www.pixar.com/favicon.ico',
+            'Marvel': 'https://www.marvel.com/favicon.ico',
+            'Star Wars': 'https://www.starwars.com/favicon.ico',
+            'National Geographic': 'https://www.nationalgeographic.com/favicon.ico'
+        };
+        
+        // Check if we have a direct logo mapping
+        const mappedLogo = serviceLogoMap[companyName];
+        if (mappedLogo) {
+            logoCache[companyName] = mappedLogo;
+            return mappedLogo;
+        }
+        
+        // Try to find a logo based on common patterns
+        const cleanName = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const commonLogos = [
+            `https://logo.clearbit.com/${cleanName}.com`,
+            `https://${cleanName}.com/favicon.ico`,
+            `https://www.${cleanName}.com/favicon.ico`
+        ];
+        
+        // Test if logo exists
+        for (const logoUrl of commonLogos) {
+            try {
+                const response = await fetch(logoUrl, { mode: 'no-cors' });
+                if (response.ok || response.status === 0) {
+                    logoCache[companyName] = logoUrl;
+                    return logoUrl;
+                }
+            } catch (e) {
+                continue;
+            }
+        }
+        
+        return null;
+    } catch (error) {
+        console.log('Logo fetch failed for:', companyName);
+        return null;
+    }
+}
 
 // Popular Services with Real Prices (USD) - grouped by company with tiers
 const popularServices = {
@@ -816,6 +881,92 @@ function handleListClick(e) {
             showNotification('Subscription removed', 'success');
         }
     }
+    
+    if (e.target.classList.contains('btn-edit')) {
+        const card = e.target.closest('.subscription-card');
+        if (!card) return;
+        
+        const subscriptionId = card.dataset.id;
+        const subscription = subscriptions.find(sub => sub.id === subscriptionId);
+        
+        if (subscription) {
+            showEditModal(subscription);
+        }
+    }
+}
+
+function showEditModal(subscription) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <h3>Edit Subscription</h3>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label for="edit-name">Subscription Name</label>
+                    <input type="text" id="edit-name" name="name" value="${escapeHtml(subscription.name)}" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-cost">Cost</label>
+                    <input type="number" id="edit-cost" name="cost" value="${subscription.cost}" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-billing">Billing Cycle</label>
+                    <select id="edit-billing" name="billing-cycle" required>
+                        <option value="monthly" ${subscription.billingCycle === 'monthly' ? 'selected' : ''}>Monthly</option>
+                        <option value="annually" ${subscription.billingCycle === 'annually' ? 'selected' : ''}>Annually</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-usage">Usage Amount</label>
+                    <input type="number" id="edit-usage" name="usage" value="${subscription.usage}" min="0" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-frequency">Usage Frequency</label>
+                    <select id="edit-frequency" name="usage-frequency" required>
+                        <option value="per-day" ${subscription.usageFrequency === 'per-day' ? 'selected' : ''}>Times per Day</option>
+                        <option value="per-week" ${subscription.usageFrequency === 'per-week' ? 'selected' : ''}>Times per Week</option>
+                        <option value="per-month" ${subscription.usageFrequency === 'per-month' ? 'selected' : ''}>Times per Month</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.querySelector('.btn-cancel').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    
+    modal.querySelector('#edit-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const cost = parseFloat(formData.get('cost'));
+        const usage = parseFloat(formData.get('usage'));
+        
+        if (!cost || cost < 0 || !usage || usage < 0) {
+            showNotification('Invalid input values', 'error');
+            return;
+        }
+        
+        subscription.name = formData.get('name').trim();
+        subscription.cost = cost;
+        subscription.billingCycle = formData.get('billing-cycle');
+        subscription.usage = usage;
+        subscription.usageFrequency = formData.get('usage-frequency');
+        
+        saveSubscriptions();
+        render();
+        modal.remove();
+        showNotification('Subscription updated successfully!', 'success');
+    });
 }
 
 function showNotification(message, type = 'info') {
@@ -977,19 +1128,23 @@ function renderChart() {
                 context.lineWidth = 1;
                 context.strokeRect(x, y, barWidth, barHeight);
                 
-                if (barHeight > 30) {
-                    const displayCost = convertPrice(item.cost);
-                    context.fillStyle = textColor;
-                    context.font = 'bold 10px Inter';
-                    context.textAlign = 'center';
-                    context.fillText(formatCurrency(displayCost), x + barWidth / 2, y + barHeight / 2 + 3);
-                }
+                // Always show cost on top of bar
+                const displayCost = convertPrice(item.cost);
+                context.fillStyle = textColor;
+                context.font = 'bold 11px Inter';
+                context.textAlign = 'center';
+                context.fillText(formatCurrency(displayCost), x + barWidth / 2, y - 5);
                 
+                // Rotate label for better readability
+                context.save();
+                context.translate(x + barWidth / 2, canvas.height - padding / 2);
+                context.rotate(-Math.PI / 4);
                 context.fillStyle = labelColor;
                 context.font = '9px Inter';
                 context.textAlign = 'center';
-                const label = item.name.substring(0, Math.min(12, 40 / barWidth));
-                context.fillText(label, x + barWidth / 2, canvas.height - padding / 2 + 3);
+                const label = item.name.substring(0, Math.min(15, 50 / barWidth));
+                context.fillText(label, 0, 5);
+                context.restore();
             });
             
             // Get theme-aware stroke color
@@ -1084,7 +1239,12 @@ function renderSubscriptionList() {
             </div>
             <div class="card-footer">
                 <span>${getValueDescription(valueCategory)}</span>
-                <button class="btn-delete"><span>Delete</span></button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn-edit" title="Edit subscription">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/><path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/></svg>
+                    </button>
+                    <button class="btn-delete"><span>Delete</span></button>
+                </div>
             </div>
         `;
         
