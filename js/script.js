@@ -1,11 +1,33 @@
 // === Currency Exchange Rates ===
 let exchangeRates = {
-    USD: { symbol: '$', rate: 1 },
-    EUR: { symbol: '€', rate: 0.92 },
-    GBP: { symbol: '£', rate: 0.79 },
-    CAD: { symbol: 'C$', rate: 1.35 },
-    AUD: { symbol: 'A$', rate: 1.52 },
-    JPY: { symbol: '¥', rate: 150 }
+    USD: { symbol: '$', rate: 1, name: 'US Dollar' },
+    EUR: { symbol: '€', rate: 0.92, name: 'Euro' },
+    GBP: { symbol: '£', rate: 0.79, name: 'British Pound' },
+    CAD: { symbol: 'C$', rate: 1.35, name: 'Canadian Dollar' },
+    AUD: { symbol: 'A$', rate: 1.52, name: 'Australian Dollar' },
+    JPY: { symbol: '¥', rate: 150, name: 'Japanese Yen' },
+    CHF: { symbol: 'CHF', rate: 0.87, name: 'Swiss Franc' },
+    CNY: { symbol: '¥', rate: 7.12, name: 'Chinese Yuan' },
+    INR: { symbol: '₹', rate: 83.25, name: 'Indian Rupee' },
+    BRL: { symbol: 'R$', rate: 5.01, name: 'Brazilian Real' },
+    MXN: { symbol: '$', rate: 18.52, name: 'Mexican Peso' },
+    KRW: { symbol: '₩', rate: 1338, name: 'South Korean Won' },
+    SGD: { symbol: 'S$', rate: 1.34, name: 'Singapore Dollar' },
+    NZD: { symbol: 'NZ$', rate: 1.62, name: 'New Zealand Dollar' },
+    HKD: { symbol: 'HK$', rate: 7.82, name: 'Hong Kong Dollar' },
+    NOK: { symbol: 'kr', rate: 10.52, name: 'Norwegian Krone' },
+    SEK: { symbol: 'kr', rate: 10.34, name: 'Swedish Krona' },
+    DKK: { symbol: 'kr', rate: 6.86, name: 'Danish Krone' },
+    PLN: { symbol: 'zł', rate: 4.04, name: 'Polish Zloty' },
+    TRY: { symbol: '₺', rate: 32.45, name: 'Turkish Lira' },
+    RUB: { symbol: '₽', rate: 91.25, name: 'Russian Ruble' },
+    ZAR: { symbol: 'R', rate: 18.92, name: 'South African Rand' },
+    THB: { symbol: '฿', rate: 35.82, name: 'Thai Baht' },
+    AED: { symbol: 'د.إ', rate: 3.67, name: 'UAE Dirham' },
+    SAR: { symbol: '﷼', rate: 3.75, name: 'Saudi Riyal' },
+    IDR: { symbol: 'Rp', rate: 15650, name: 'Indonesian Rupiah' },
+    MYR: { symbol: 'RM', rate: 4.71, name: 'Malaysian Ringgit' },
+    PHP: { symbol: '₱', rate: 55.62, name: 'Philippine Peso' }
 };
 
 let currentCurrency = 'USD';
@@ -16,17 +38,15 @@ async function fetchExchangeRates() {
     try {
         const response = await fetch('https://api.exchangerate.host/latest?base=USD');
         const data = await response.json();
-        
+
         if (data.success && data.rates) {
             const oldRates = { ...exchangeRates };
-            exchangeRates = {
-                USD: { symbol: '$', rate: 1 },
-                EUR: { symbol: '€', rate: data.rates.EUR || 0.92 },
-                GBP: { symbol: '£', rate: data.rates.GBP || 0.79 },
-                CAD: { symbol: 'C$', rate: data.rates.CAD || 1.35 },
-                AUD: { symbol: 'A$', rate: data.rates.AUD || 1.52 },
-                JPY: { symbol: '¥', rate: data.rates.JPY || 150 }
-            };
+            // Update rates for all currencies
+            Object.keys(exchangeRates).forEach(currency => {
+                if (data.rates[currency]) {
+                    exchangeRates[currency].rate = data.rates[currency];
+                }
+            });
             
             // Only re-render if rates actually changed
             let ratesChanged = false;
@@ -36,10 +56,11 @@ async function fetchExchangeRates() {
                     break;
                 }
             }
-            
+
             if (ratesChanged && subscriptions.length > 0) {
                 render();
                 renderQuickAdd();
+                renderChart(); // Update chart in real-time
             }
         }
     } catch (error) {
@@ -53,6 +74,44 @@ rateUpdateTimer = setInterval(fetchExchangeRates, 5000);
 
 // Initial fetch
 fetchExchangeRates();
+
+// Detect user's country and set default currency
+async function detectUserCurrency() {
+    try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        // Country to currency mapping
+        const countryToCurrency = {
+            'US': 'USD', 'CA': 'CAD', 'GB': 'GBP', 'AU': 'AUD',
+            'JP': 'JPY', 'CH': 'CHF', 'CN': 'CNY', 'IN': 'INR',
+            'BR': 'BRL', 'MX': 'MXN', 'KR': 'KRW', 'SG': 'SGD',
+            'NZ': 'NZD', 'HK': 'HKD', 'NO': 'NOK', 'SE': 'SEK',
+            'DK': 'DKK', 'PL': 'PLN', 'TR': 'TRY', 'RU': 'RUB',
+            'ZA': 'ZAR', 'TH': 'THB', 'AE': 'AED', 'SA': 'SAR',
+            'ID': 'IDR', 'MY': 'MYR', 'PH': 'PHP', 'DE': 'EUR',
+            'FR': 'EUR', 'IT': 'EUR', 'ES': 'EUR', 'NL': 'EUR',
+            'BE': 'EUR', 'AT': 'EUR', 'PT': 'EUR', 'FI': 'EUR',
+            'GR': 'EUR', 'IE': 'EUR'
+        };
+        
+        const detectedCurrency = countryToCurrency[data.country_code] || 'USD';
+        
+        // Only set if user hasn't manually set a currency
+        if (!localStorage.getItem('selected-currency')) {
+            currentCurrency = detectedCurrency;
+            const currencySelector = document.getElementById('currency-selector');
+            if (currencySelector) {
+                currencySelector.value = detectedCurrency;
+            }
+            render();
+        }
+    } catch (error) {
+        console.log('Could not detect location, using USD as default');
+    }
+}
+
+detectUserCurrency();
 
 // === Data Management ===
 let subscriptions = [];
@@ -170,6 +229,18 @@ function getCompanyLogo(companyName) {
     
     return null;
 }
+
+// Preload logos for faster display
+function preloadLogos() {
+    const logosToPreload = Object.values(logoMapping).filter(url => url);
+    logosToPreload.forEach(url => {
+        const img = new Image();
+        img.src = url;
+    });
+}
+
+// Start preloading logos on page load
+preloadLogos();
 
 // Popular Services with Real Prices (USD) - grouped by company with tiers
 const popularServices = {
@@ -1425,12 +1496,12 @@ function renderChart() {
             const textColor = isDark ? '#1a1a1a' : '#fff';
             const labelColor = isDark ? '#a0a0a0' : '#666';
             
-            // Color palette for different subscriptions
-            const colors = [
-                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-                '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
-                '#14b8a6', '#e11d48', '#7c3aed', '#16a34a', '#dc2626',
-                '#0ea5e9', '#a855f7', '#d946ef', '#f43f5e', '#0d9488'
+            // Soft pastel colors for better visibility
+            const pastelColors = [
+                '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF',
+                '#E4BAFF', '#FFCBA4', '#FFB3D1', '#C8E6C9', '#BBDEFB',
+                '#FFF9C4', '#F8BBD9', '#CE93D8', '#90CAF9', '#A5D6A7',
+                '#FFCCBC', '#D1C4E9', '#C5E1A5', '#FFE082', '#F5B7B1'
             ];
             
             monthlyCosts.forEach((item, index) => {
@@ -1438,40 +1509,40 @@ function renderChart() {
                 const x = padding + index * (barWidth + barSpacing);
                 const y = canvas.height - padding - barHeight;
                 
-                // Use different color for each bar
-                const colorIndex = index % colors.length;
-                const barColor = colors[colorIndex];
-                
-                // Create gradient for depth
-                const gradient = context.createLinearGradient(x, y, x, y + barHeight);
-                gradient.addColorStop(0, barColor);
-                gradient.addColorStop(1, isDark ? adjustBrightness(barColor, -20) : adjustBrightness(barColor, 20));
-                
-                context.fillStyle = gradient;
+                // Use soft pastel color for each bar
+                const colorIndex = index % pastelColors.length;
+                context.fillStyle = pastelColors[colorIndex];
                 context.fillRect(x, y, barWidth, barHeight);
                 
-                // Add border for better definition
-                context.strokeStyle = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                context.lineWidth = 1;
+                // Subtle border for definition
+                context.strokeStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)';
+                context.lineWidth = 1.5;
                 context.strokeRect(x, y, barWidth, barHeight);
                 
-                // Always show cost on top of bar
+                // Show cost on top of bar with background for visibility
                 const displayCost = convertPrice(item.cost);
-                context.fillStyle = textColor;
-                context.font = 'bold 11px Inter';
-                context.textAlign = 'center';
-                context.fillText(formatCurrency(displayCost), x + barWidth / 2, y - 5);
+                const costText = formatCurrency(displayCost);
+                const textMetrics = context.measureText(costText);
+                const bgWidth = textMetrics.width + 6;
+                const bgHeight = 16;
                 
-                // Rotate label for better readability
-                context.save();
-                context.translate(x + barWidth / 2, canvas.height - padding / 2);
-                context.rotate(-Math.PI / 4);
+                // Background for text
+                context.fillStyle = isDark ? 'rgba(26, 26, 26, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+                context.fillRect(x + barWidth / 2 - bgWidth / 2, y - 22, bgWidth, bgHeight);
+                
+                // Text on bar
+                context.fillStyle = textColor;
+                context.font = 'bold 10px Inter';
+                context.textAlign = 'center';
+                context.fillText(costText, x + barWidth / 2, y - 8);
+                
+                // Company name label below bar (no rotation, centered)
                 context.fillStyle = labelColor;
                 context.font = '9px Inter';
                 context.textAlign = 'center';
-                const label = item.name.substring(0, Math.min(15, 50 / barWidth));
-                context.fillText(label, 0, 5);
-                context.restore();
+                context.textBaseline = 'top';
+                const label = item.name.substring(0, Math.min(20, 60 / barWidth));
+                context.fillText(label, x + barWidth / 2, canvas.height - padding / 2 + 3);
             });
             
             // Get theme-aware stroke color
@@ -1626,6 +1697,33 @@ function escapeHtml(text) {
 
 initializeQuickAdd();
 loadSubscriptions();
+
+// Initialize currency selector with all currencies
+function initializeCurrencySelector() {
+    const currencySelector = document.getElementById('currency-selector');
+    if (!currencySelector) return;
+    
+    // Clear existing options
+    currencySelector.innerHTML = '';
+    
+    // Add all currency options
+    Object.keys(exchangeRates).forEach(currency => {
+        const option = document.createElement('option');
+        option.value = currency;
+        option.textContent = `${currency} (${exchangeRates[currency].symbol}) ${exchangeRates[currency].name}`;
+        currencySelector.appendChild(option);
+    });
+    
+    // Set current currency
+    const savedCurrency = localStorage.getItem('subscriblytics-currency');
+    if (savedCurrency && exchangeRates[savedCurrency]) {
+        currentCurrency = savedCurrency;
+        currencySelector.value = savedCurrency;
+    }
+}
+
+// Call on initialization
+setTimeout(initializeCurrencySelector, 0);
 
 // === Dark Mode Functionality ===
 const themeToggle = document.getElementById('theme-toggle');
