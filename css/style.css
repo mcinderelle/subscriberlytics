@@ -58,8 +58,46 @@
     to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* Poppins Font - Used throughout the application */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* OpenAI Sans Font - Custom Web Font */
+@font-face {
+    font-family: 'OpenAI Sans';
+    src: url('https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenAI Sans';
+    src: url('https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-RegularItalic.woff2') format('woff2');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenAI Sans';
+    src: url('https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenAI Sans';
+    src: url('https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Semibold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenAI Sans';
+    src: url('https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
 
 :root {
     --primary-color: #000;
@@ -75,10 +113,10 @@
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --error-color: #ef4444;
-    /* Typography - Poppins throughout */
-    --font-primary: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-secondary: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'Poppins', monospace;
+    /* Typography - OpenAI Sans throughout */
+    --font-primary: 'OpenAI Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-secondary: 'OpenAI Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'OpenAI Sans', monospace;
     
     /* OpenAI spacing system */
     --spacing-xs: 0.25rem;
@@ -113,15 +151,15 @@
 }
 
 body {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'OpenAI Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     line-height: 1.6;
     color: var(--text-primary);
     background: var(--bg-primary);
     min-height: 100vh;
     overflow-x: hidden;
     font-weight: 400;
-    letter-spacing: 0;
-    /* Poppins: Clean, modern, and professional */
+    letter-spacing: -0.01em;
+    /* OpenAI Sans: Geometric precision with rounded approachability */
 }
 
 [data-theme="dark"] body {
@@ -184,7 +222,7 @@ header {
     padding: 2rem 1rem;
     position: relative;
     z-index: 1;
-    animation: fadeInDown 0.6s ease;
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -208,7 +246,7 @@ header {
     font-size: 2rem;
     font-weight: 700;
     color: var(--text-primary);
-    animation: pulse 2s ease-in-out infinite;
+    /* No animation - clean static display */
 }
 
 .logo-line {
@@ -217,17 +255,7 @@ header {
     height: 100%;
     border: 2px solid var(--primary-color);
     border-radius: 50%;
-    animation: rotate 8s linear infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.8; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.05); }
-}
-
-@keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    /* No animation - clean static display */
 }
 
 .credits {
@@ -243,7 +271,7 @@ header {
 @keyframes fadeInDown {
     from {
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translateY(-8px);
     }
     to {
         opacity: 1;
@@ -257,7 +285,7 @@ header h1 {
     font-weight: 600;
     margin-bottom: 0.25rem;
     letter-spacing: -0.02em;
-    animation: fadeIn 0.8s ease;
+    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 header h1.logo-text {
@@ -305,7 +333,7 @@ header .tagline {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     font-size: 1.25rem;
 }
 
@@ -393,7 +421,7 @@ header .tagline {
     background: rgba(255, 255, 255, 0.95);
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -433,7 +461,7 @@ header .tagline {
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -465,7 +493,7 @@ header .tagline {
     background: rgba(255, 255, 255, 0.9);
     color: var(--text-primary);
     min-width: 200px;
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="dark"] .search-input {
@@ -497,7 +525,7 @@ header .tagline {
     color: var(--text-primary);
     min-width: 150px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -543,7 +571,7 @@ select {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -584,11 +612,11 @@ select {
 @keyframes fadeInScale {
     from {
         opacity: 0;
-        transform: scale(0.85) translateY(10px);
+        transform: translateY(4px);
     }
     to {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: translateY(0);
     }
 }
 
@@ -672,7 +700,7 @@ select {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 0.9375rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: inherit;
     background: rgba(255, 255, 255, 0.95);
     color: var(--text-primary);
@@ -708,7 +736,7 @@ select {
     font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     width: 100%;
     font-family: inherit;
     position: relative;
@@ -754,7 +782,7 @@ select {
     font-size: 0.875rem;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     font-weight: 500;
     position: relative;
     overflow: hidden;
@@ -800,7 +828,7 @@ select {
     border-radius: 8px;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     font-weight: 500;
     position: relative;
     overflow: hidden;
@@ -828,7 +856,7 @@ select {
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: inherit;
     position: relative;
     overflow: hidden;
@@ -904,7 +932,7 @@ select {
     padding: 1.25rem;
     border-radius: 10px;
     border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
 }
@@ -987,7 +1015,7 @@ select {
     padding: 1.5rem;
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
     animation: slideInLeft 0.5s ease both;
@@ -1095,7 +1123,7 @@ select {
     border: 1px solid var(--border-color);
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -1129,7 +1157,7 @@ select {
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
 }
@@ -1268,7 +1296,7 @@ select {
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     border: 1px solid var(--border-color);
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .comparison-item:hover {
@@ -1399,7 +1427,7 @@ select {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: inherit;
 }
 
@@ -1424,7 +1452,7 @@ select {
     font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: inherit;
 }
 
@@ -1563,7 +1591,7 @@ select {
     font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: inherit;
 }
 
