@@ -200,26 +200,13 @@ body::after {
     animation: gridGlow 8s ease-in-out infinite;
 }
 
-/* Cursor AI-style shiny hover effect */
-.cursor-glow {
-    position: fixed;
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    z-index: 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-[data-theme="dark"] .cursor-glow {
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
-}
-
-body.show-cursor-glow .cursor-glow {
-    opacity: 1;
+/* Translucent Grid Shine Effect */
+body::before {
+    background: 
+        linear-gradient(to right, var(--border-color) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--border-color) 1px, transparent 1px);
+    background-size: 40px 40px;
+    will-change: transform;
 }
 
 @keyframes gridGlow {
@@ -1128,25 +1115,39 @@ select {
     margin-bottom: 1.25rem;
 }
 
-.card-title-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
 .company-logo {
     width: 48px;
     height: 48px;
     object-fit: contain;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.6);
     padding: 0.25rem;
     flex-shrink: 0;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="dark"] .company-logo {
-    background: rgba(15, 15, 15, 0.5);
+    background: rgba(30, 30, 30, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.card-header:hover .company-logo {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="dark"] .card-header:hover .company-logo {
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.card-title-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0; /* Prevent text overflow */
 }
 
 .company-logo-small {

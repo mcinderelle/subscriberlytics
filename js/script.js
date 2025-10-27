@@ -1772,37 +1772,6 @@ function updateThemeIcon() {
 themeToggle?.addEventListener('click', toggleTheme);
 initTheme();
 
-// === Cursor Glow Effect ===
-const cursorGlow = document.getElementById('cursor-glow');
-let mouseX = 0;
-let mouseY = 0;
-let glowX = 0;
-let glowY = 0;
-
-document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    document.body.classList.add('show-cursor-glow');
-});
-
-// Smooth glow movement using requestAnimationFrame
-function animateGlow() {
-    glowX += (mouseX - glowX) * 0.05;
-    glowY += (mouseY - glowY) * 0.05;
-    
-    if (cursorGlow) {
-        cursorGlow.style.left = glowX + 'px';
-        cursorGlow.style.top = glowY + 'px';
-    }
-    
-    requestAnimationFrame(animateGlow);
-}
-animateGlow();
-
-document.addEventListener('mouseleave', () => {
-    document.body.classList.remove('show-cursor-glow');
-});
-
 // === Export/Import Functionality ===
 const exportBtn = document.getElementById('export-btn');
 const importBtn = document.getElementById('import-btn');
