@@ -208,6 +208,8 @@ const logoMapping = {
 };
 
 function getCompanyLogo(companyName) {
+    if (!companyName) return null;
+    
     // Try exact match first
     if (logoMapping[companyName]) {
         return logoMapping[companyName];
@@ -222,7 +224,7 @@ function getCompanyLogo(companyName) {
     }
     
     // Try getting company name from subscription (handle tier suffixes)
-    const baseName = companyName.split(' - ')[0].split(' Basic')[0].split(' Standard')[0].split(' Premium')[0];
+    const baseName = companyName.split(' - ')[0].split(' Basic')[0].split(' Standard')[0].split(' Premium')[0].split(' Individual')[0].split(' Family')[0].split(' Business')[0].split(' Pro')[0].split(' Plus')[0].split(' Max')[0];
     if (logoMapping[baseName]) {
         return logoMapping[baseName];
     }
