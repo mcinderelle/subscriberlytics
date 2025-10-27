@@ -1136,6 +1136,10 @@ loadSubscriptions();
 const themeToggle = document.getElementById('theme-toggle');
 const themeIcon = themeToggle?.querySelector('.theme-icon');
 let currentTheme = localStorage.getItem('subscriblytics-theme') || 'light';
+// Force light mode as default
+if (!localStorage.getItem('subscriblytics-theme')) {
+    localStorage.setItem('subscriblytics-theme', 'light');
+}
 
 function initTheme() {
     document.documentElement.setAttribute('data-theme', currentTheme);

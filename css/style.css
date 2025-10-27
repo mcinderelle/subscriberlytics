@@ -22,16 +22,12 @@
 }
 
 [data-theme="dark"] {
-    --primary-color: #fff;
-    --text-primary: #fff;
+    --text-primary: #e5e5e5;
     --text-secondary: #a0a0a0;
     --text-muted: #666;
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #2a2a2a;
-    --border-color: #3a3a3a;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --bg-primary: #0f0f0f;
+    --bg-secondary: #1a1a1a;
+    --border-color: #2a2a2a;
 }
 
 /* Screen reader only text */
@@ -54,6 +50,11 @@ body {
     background: var(--bg-primary);
     min-height: 100vh;
     overflow-x: hidden;
+}
+
+[data-theme="dark"] body {
+    color: var(--text-primary);
+    background: var(--bg-primary);
 }
 
 body::before {
@@ -98,7 +99,7 @@ header {
 }
 
 [data-theme="dark"] header {
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(15, 15, 15, 0.95);
 }
 
 .logo-container {
@@ -297,9 +298,15 @@ header .tagline {
     font-size: 0.9375rem;
     font-family: inherit;
     background: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] #currency-selector {
+    background: rgba(15, 15, 15, 0.95);
+    color: var(--text-primary);
 }
 
 #currency-selector:hover {
@@ -324,6 +331,10 @@ header .tagline {
     border-radius: 12px;
     border: 1px solid var(--border-color);
     animation: slideUp 0.8s ease 0.4s both;
+}
+
+[data-theme="dark"] .quick-add-section {
+    background: rgba(26, 26, 26, 0.95);
 }
 
 @keyframes slideUp {
@@ -359,8 +370,14 @@ header .tagline {
     font-size: 0.9375rem;
     font-family: inherit;
     background: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     min-width: 200px;
     transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .search-input {
+    background: rgba(15, 15, 15, 0.9);
+    color: var(--text-primary);
 }
 
 .search-input:focus {
@@ -384,10 +401,16 @@ header .tagline {
     font-size: 0.9375rem;
     font-family: inherit;
     background: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
     min-width: 150px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .filter-select {
+    background: rgba(15, 15, 15, 0.95);
+    color: var(--text-primary);
 }
 
 .filter-select:hover {
@@ -434,6 +457,11 @@ select {
     animation: fadeInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
     position: relative;
     overflow: hidden;
+}
+
+[data-theme="dark"] .quick-add-item {
+    background: rgba(26, 26, 26, 0.9);
+    color: var(--text-primary);
 }
 
 .quick-add-item::before {
@@ -502,6 +530,10 @@ select {
     animation: slideUp 0.8s ease 0.5s both;
 }
 
+[data-theme="dark"] .form-section {
+    background: rgba(26, 26, 26, 0.95);
+}
+
 .form-section h2 {
     font-size: 1.125rem;
     margin-bottom: 1.25rem;
@@ -541,7 +573,14 @@ select {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
     background: rgba(255, 255, 255, 0.95);
+    color: var(--text-primary);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group select {
+    background: rgba(15, 15, 15, 0.95);
+    color: var(--text-primary);
 }
 
 .form-group input:hover,
@@ -611,6 +650,7 @@ select {
     border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: 8px;
     font-size: 0.875rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-weight: 500;
@@ -715,6 +755,10 @@ select {
     animation: fadeIn 0.6s ease;
 }
 
+[data-theme="dark"] .summary-container {
+    background: rgba(26, 26, 26, 0.95);
+}
+
 .summary-container h2 {
     font-size: 1.125rem;
     margin-bottom: 1.25rem;
@@ -735,6 +779,10 @@ select {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+}
+
+[data-theme="dark"] .stat-box {
+    background: rgba(15, 15, 15, 0.9);
 }
 
 .stat-box::before {
@@ -783,6 +831,10 @@ select {
     animation: slideUp 0.6s ease 0.1s both;
 }
 
+[data-theme="dark"] .chart-container {
+    background: rgba(26, 26, 26, 0.95);
+}
+
 .chart-container h3 {
     font-size: 1.125rem;
     margin-bottom: 1.25rem;
@@ -811,6 +863,10 @@ select {
     position: relative;
     overflow: hidden;
     animation: slideInLeft 0.5s ease both;
+}
+
+[data-theme="dark"] .subscription-card {
+    background: rgba(26, 26, 26, 0.95);
 }
 
 @keyframes slideInLeft {
@@ -899,6 +955,10 @@ select {
     overflow: hidden;
 }
 
+[data-theme="dark"] .card-metric {
+    background: rgba(15, 15, 15, 0.9);
+}
+
 .card-metric::after {
     content: '';
     position: absolute;
@@ -983,6 +1043,10 @@ select {
     border-radius: 12px;
     border: 1px solid var(--border-color);
     animation: fadeIn 0.6s ease;
+}
+
+[data-theme="dark"] .empty-state {
+    background: rgba(26, 26, 26, 0.95);
 }
 
 .empty-state h3 {
@@ -1107,6 +1171,11 @@ select {
     max-width: 500px;
     width: 90%;
     animation: modalSlideUp 0.3s ease;
+}
+
+[data-theme="dark"] .modal-content {
+    background: #1a1a1a;
+    color: var(--text-primary);
 }
 
 @keyframes modalSlideUp {
@@ -1261,6 +1330,10 @@ select {
     width: 90%;
     animation: modalSlideUp 0.3s ease;
     border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .shortcuts-content {
+    background: #1a1a1a;
 }
 
 .shortcuts-content h3 {
