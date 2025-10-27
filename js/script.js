@@ -285,11 +285,23 @@ const popularServices = {
         ],
         category: 'Cloud Storage'
     },
-    'Box Personal': { cost: 14, category: 'Cloud Storage' },
+    'Box': {
+        options: [
+            { tier: 'Personal', cost: 14 },
+            { tier: 'Business', cost: 20 }
+        ],
+        category: 'Cloud Storage'
+    },
     'pCloud': { cost: 4.99, category: 'Cloud Storage' },
     'Tresorit': { cost: 10.42, category: 'Cloud Storage' },
     'Sync': { cost: 8, category: 'Cloud Storage' },
-    'Mega Pro': { cost: 6.99, category: 'Cloud Storage' },
+    'Mega': {
+        options: [
+            { tier: 'Pro', cost: 6.99 },
+            { tier: 'Business', cost: 12.99 }
+        ],
+        category: 'Cloud Storage'
+    },
     'IceDrive': { cost: 4.17, category: 'Cloud Storage' },
     'Internxt': { cost: 4.17, category: 'Cloud Storage' },
     'Koofr': { cost: 5.99, category: 'Cloud Storage' },
@@ -316,25 +328,129 @@ const popularServices = {
     'Adobe Photoshop': { cost: 22.99, category: 'Productivity' },
     'Adobe Illustrator': { cost: 22.99, category: 'Productivity' },
     'Adobe Premiere Pro': { cost: 22.99, category: 'Productivity' },
-    'Notion Plus': { cost: 8, category: 'Productivity' },
-    'Notion AI': { cost: 20, category: 'Productivity' },
-    'Evernote Premium': { cost: 7.99, category: 'Productivity' },
-    'Todoist Premium': { cost: 4, category: 'Productivity' },
-    'Grammarly Premium': { cost: 12, category: 'Productivity' },
-    '1Password': { cost: 2.99, category: 'Productivity' },
-    'LastPass Premium': { cost: 3, category: 'Productivity' },
+    'Notion': {
+        options: [
+            { tier: 'Plus', cost: 8 },
+            { tier: 'Business', cost: 15 },
+            { tier: 'Enterprise', cost: 20 }
+        ],
+        category: 'Productivity'
+    },
+    'Evernote': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Personal', cost: 7.99 },
+            { tier: 'Professional', cost: 14.99 }
+        ],
+        category: 'Productivity'
+    },
+    'Todoist': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Pro', cost: 4 },
+            { tier: 'Business', cost: 6 }
+        ],
+        category: 'Productivity'
+    },
+    'Grammarly': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Premium', cost: 12 },
+            { tier: 'Business', cost: 15 }
+        ],
+        category: 'Productivity'
+    },
+    '1Password': {
+        options: [
+            { tier: 'Individual', cost: 2.99 },
+            { tier: 'Family', cost: 4.99 }
+        ],
+        category: 'Productivity'
+    },
+    'LastPass': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Premium', cost: 3 },
+            { tier: 'Business', cost: 7 }
+        ],
+        category: 'Productivity'
+    },
     'Dashlane': { cost: 4.99, category: 'Productivity' },
     'Calendly Premium': { cost: 10, category: 'Productivity' },
-    'Zoom Pro': { cost: 14.99, category: 'Productivity' },
-    'Canva Pro': { cost: 14.99, category: 'Productivity' },
-    'Figma Professional': { cost: 12, category: 'Productivity' },
-    'Slack Pro': { cost: 7.25, category: 'Productivity' },
-    'Asana Premium': { cost: 10.99, category: 'Productivity' },
-    'Monday.com': { cost: 8, category: 'Productivity' },
-    'ClickUp': { cost: 5, category: 'Productivity' },
-    'Trello': { cost: 5, category: 'Productivity' },
+    'Zoom': {
+        options: [
+            { tier: 'Basic', cost: 0 },
+            { tier: 'Pro', cost: 14.99 },
+            { tier: 'Business', cost: 19.99 }
+        ],
+        category: 'Productivity'
+    },
+    'Canva': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Pro', cost: 14.99 },
+            { tier: 'Enterprise', cost: 30 }
+        ],
+        category: 'Productivity'
+    },
+    'Figma': {
+        options: [
+            { tier: 'Starter', cost: 0 },
+            { tier: 'Professional', cost: 12 },
+            { tier: 'Enterprise', cost: 45 }
+        ],
+        category: 'Productivity'
+    },
+    'Slack': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Pro', cost: 7.25 },
+            { tier: 'Business', cost: 12.50 }
+        ],
+        category: 'Productivity'
+    },
+    'Asana': {
+        options: [
+            { tier: 'Personal', cost: 0 },
+            { tier: 'Starter', cost: 10.99 },
+            { tier: 'Advanced', cost: 24.99 }
+        ],
+        category: 'Productivity'
+    },
+    'Monday': {
+        options: [
+            { tier: 'Individual', cost: 0 },
+            { tier: 'Basic', cost: 8 },
+            { tier: 'Standard', cost: 10 },
+            { tier: 'Pro', cost: 16 }
+        ],
+        category: 'Productivity'
+    },
+    'ClickUp': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Unlimited', cost: 5 },
+            { tier: 'Business', cost: 12 }
+        ],
+        category: 'Productivity'
+    },
+    'Trello': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Standard', cost: 5 },
+            { tier: 'Premium', cost: 10 }
+        ],
+        category: 'Productivity'
+    },
     'Wrike': { cost: 9.80, category: 'Productivity' },
-    'Airtable': { cost: 10, category: 'Productivity' },
+    'Airtable': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Plus', cost: 10 },
+            { tier: 'Pro', cost: 20 }
+        ],
+        category: 'Productivity'
+    },
     'Monday.com Business': { cost: 16, category: 'Productivity' },
     'Teamwork': { cost: 10, category: 'Productivity' },
     'Basecamp': { cost: 15, category: 'Productivity' },
@@ -365,10 +481,29 @@ const popularServices = {
         category: 'Gaming'
     },
     'EA Play': { cost: 4.99, category: 'Gaming' },
-    'GeForce Now Priority': { cost: 9.99, category: 'Gaming' },
-    'GeForce Now Ultimate': { cost: 19.99, category: 'Gaming' },
-    'Roblox Premium': { cost: 4.99, category: 'Gaming' },
-    'Ubisoft+': { cost: 14.99, category: 'Gaming' },
+    'GeForce Now': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Priority', cost: 9.99 },
+            { tier: 'Ultimate', cost: 19.99 }
+        ],
+        category: 'Gaming'
+    },
+    'Roblox': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Premium $5', cost: 4.99 },
+            { tier: 'Premium $10', cost: 9.99 }
+        ],
+        category: 'Gaming'
+    },
+    'Ubisoft+': {
+        options: [
+            { tier: 'Essentials', cost: 7.99 },
+            { tier: 'Multi Access', cost: 14.99 }
+        ],
+        category: 'Gaming'
+    },
     'GameFly': { cost: 15.95, category: 'Gaming' },
     'Shadow': { cost: 29.99, category: 'Gaming' },
     'Boosteroid': { cost: 9.99, category: 'Gaming' },
@@ -384,13 +519,43 @@ const popularServices = {
     'CBS All Access': { cost: 5.99, category: 'Gaming' },
     
     // Fitness (25 services)
-    'Peloton App': { cost: 12.99, category: 'Fitness' },
-    'Peloton All Access': { cost: 44, category: 'Fitness' },
+    'Peloton': {
+        options: [
+            { tier: 'App', cost: 12.99 },
+            { tier: 'All Access', cost: 44 }
+        ],
+        category: 'Fitness'
+    },
     'Apple Fitness+': { cost: 9.99, category: 'Fitness' },
-    'Headspace': { cost: 12.99, category: 'Fitness' },
-    'Calm': { cost: 14.99, category: 'Fitness' },
-    'MyFitnessPal Premium': { cost: 9.99, category: 'Fitness' },
-    'Strava': { cost: 11.99, category: 'Fitness' },
+    'Headspace': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Plus', cost: 12.99 }
+        ],
+        category: 'Fitness'
+    },
+    'Calm': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Premium', cost: 14.99 }
+        ],
+        category: 'Fitness'
+    },
+    'MyFitnessPal': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Premium', cost: 9.99 },
+            { tier: 'Premium+', cost: 19.99 }
+        ],
+        category: 'Fitness'
+    },
+    'Strava': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Subscription', cost: 11.99 }
+        ],
+        category: 'Fitness'
+    },
     'Noom': { cost: 59, category: 'Fitness' },
     'NordicTrack': { cost: 39.99, category: 'Fitness' },
     'Fitbit Premium': { cost: 9.99, category: 'Fitness' },
@@ -411,18 +576,62 @@ const popularServices = {
     'Obé': { cost: 27, category: 'Fitness' },
     
     // Learning (25 services)
-    'MasterClass': { cost: 15, category: 'Learning' },
-    'Skillshare': { cost: 32, category: 'Learning' },
-    'LinkedIn Learning': { cost: 39.99, category: 'Learning' },
-    'Udemy Personal': { cost: 16.99, category: 'Learning' },
-    'Udemy Business': { cost: 199, category: 'Learning' },
-    'Duolingo Super': { cost: 6.99, category: 'Learning' },
-    'Duolingo Max': { cost: 83.99, category: 'Learning' },
+    'MasterClass': {
+        options: [
+            { tier: 'Standard', cost: 15 },
+            { tier: 'Duo', cost: 20 },
+            { tier: 'Family', cost: 23 }
+        ],
+        category: 'Learning'
+    },
+    'Skillshare': {
+        options: [
+            { tier: 'Monthly', cost: 32 },
+            { tier: 'Annual', cost: 168 }
+        ],
+        category: 'Learning'
+    },
+    'LinkedIn Learning': {
+        options: [
+            { tier: 'Monthly', cost: 39.99 },
+            { tier: 'Annual', cost: 292.80 }
+        ],
+        category: 'Learning'
+    },
+    'Udemy': {
+        options: [
+            { tier: 'Free Courses', cost: 0 },
+            { tier: 'Personal', cost: 16.99 },
+            { tier: 'Business', cost: 199 }
+        ],
+        category: 'Learning'
+    },
+    'Duolingo': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Super', cost: 6.99 },
+            { tier: 'Max', cost: 12.99 }
+        ],
+        category: 'Learning'
+    },
     'Babbel': { cost: 13.99, category: 'Learning' },
     'Rosetta Stone': { cost: 35.97, category: 'Learning' },
-    'Coursera Plus': { cost: 59, category: 'Learning' },
+    'Coursera': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Plus', cost: 59 },
+            { tier: 'Guided', cost: 399 }
+        ],
+        category: 'Learning'
+    },
     'Brilliant': { cost: 24.99, category: 'Learning' },
-    'Codecademy Pro': { cost: 39.99, category: 'Learning' },
+    'Codecademy': {
+        options: [
+            { tier: 'Free', cost: 0 },
+            { tier: 'Pro', cost: 39.99 }
+        ],
+        category: 'Learning'
+    },
     'Pluralsight': { cost: 29, category: 'Learning' },
     'Treehouse': { cost: 25, category: 'Learning' },
     'General Assembly': { cost: 150, category: 'Learning' },
@@ -438,8 +647,19 @@ const popularServices = {
     'ProWritingAid': { cost: 20, category: 'Learning' },
     
     // Food & Delivery (20 services)
-    'Uber Eats Pass': { cost: 9.99, category: 'Food & Delivery' },
-    'DoorDash DashPass': { cost: 9.99, category: 'Food & Delivery' },
+    'Uber Eats': {
+        options: [
+            { tier: 'Pass', cost: 9.99 },
+            { tier: 'Eats Pass +', cost: 15.99 }
+        ],
+        category: 'Food & Delivery'
+    },
+    'DoorDash': {
+        options: [
+            { tier: 'DashPass', cost: 9.99 }
+        ],
+        category: 'Food & Delivery'
+    },
     'Grubhub+': { cost: 9.99, category: 'Food & Delivery' },
     'Instacart Express': { cost: 9.99, category: 'Food & Delivery' },
     'Shipt': { cost: 9.99, category: 'Food & Delivery' },
