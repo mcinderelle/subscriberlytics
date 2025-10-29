@@ -4,7 +4,7 @@ A modern subscription tracking and analytics tool designed by **Mayukhjit Chakra
 
 ## 🌐 Live Demo
 
-**[View Live on Vercel →](https://subscriblytics-n8dtoru3h-rajchakrabortymusic-3025s-projects.vercel.app)**
+**[View Live on Vercel →]((https://subscriberlytics.vercel.app/))**
 
 Experience the full app with all features including real-time currency conversion, PWA support, and offline functionality.
 
